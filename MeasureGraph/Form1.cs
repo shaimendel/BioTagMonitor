@@ -25,6 +25,7 @@ namespace MeasureGraph
         private string pulseLengthData;
         private string dacOutputData;
         private string pulseIntervalData;
+        private Task simulationTask = null;
 
         public Form1()
         {
@@ -56,7 +57,7 @@ namespace MeasureGraph
             measureChart.AxisY.Add(new Axis
             {
                 Title = "Voltage/Current during peak",
-            });
+            });            
         }
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -120,12 +121,23 @@ namespace MeasureGraph
             port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
             goButton.Enabled = false;
 
-            Task.Run(() => {
+            createSimulationTaskIfNeeded();
+        }
+
+        private void createSimulationTaskIfNeeded()
+        {
+            if (!simulationPanel.Enabled || simulationTask != null)
+                return;
+
+            simulationTask = Task.Run(() => {
                 while (true)
                 {
-                    string d = Volatile.Read(ref dacOutputData);
-                    port.WriteLine(d);
-                    port.WriteLine(Volatile.Read(ref pulseLengthData));
+                    if (simulationPanel.Enabled)
+                    {
+                        string d = Volatile.Read(ref dacOutputData);
+                        port.WriteLine(d);
+                        port.WriteLine(Volatile.Read(ref pulseLengthData));
+                    }
                     Thread.Sleep(int.Parse(Volatile.Read(ref pulseIntervalData)));
                 }
             });
@@ -156,6 +168,12 @@ namespace MeasureGraph
         private void updateButton_Click(object sender, EventArgs e)
         {
             updateSampleData();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            simulationPanel.Enabled = !simulationPanel.Enabled;
+            createSimulationTaskIfNeeded();
         }
     }
 }
