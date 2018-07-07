@@ -126,7 +126,7 @@ namespace MeasureGraph
 
         private void createSimulationTaskIfNeeded()
         {
-            if (!simulationPanel.Enabled || simulationTask != null)
+            if (!simulationPanel.Enabled || simulationTask != null || goButton.Enabled)
                 return;
 
             simulationTask = Task.Run(() => {
