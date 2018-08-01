@@ -1,5 +1,3 @@
-#include <libmaple/dac.h>
-
 const int digital_pin = PC3;
 const int analogPins[2] = { PA1, PA2 };
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
@@ -9,9 +7,6 @@ const int analog_output_pin = PA4;
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(analog_output_pin, PWM);
-  dac_enable_channel(DAC, 1);
-  dac_init(DAC, DAC_CH1 | DAC_CH2);
-  
   pinMode(digital_pin, OUTPUT);
   uint8_t i;
   for (i = 0; i < analogCount; i++)
@@ -19,7 +14,7 @@ void setup() {
     pinMode(analogPins[i], INPUT_ANALOG);
   }
 
-  dac_write_channel(DAC, DAC_CH1, 0);
+  setVoltageRaw(analog_output_pin, 0);
   setDigitalVoltage(digital_pin, HIGH);
   
   // Open serial communications and wait for port to open:
@@ -50,7 +45,7 @@ void loop() {
 //  Serial.println("---------------------------");
   
   setDigitalVoltage(digital_pin, LOW);
-  dac_write_channel(DAC, DAC_CH1, dac_voltage);
+  setVoltageRaw(analog_output_pin, dac_voltage);
 
   unsigned long currentMillis = millis();
   float a2_in_pulse = getVoltage(PA2); //Battery Voltage
@@ -69,7 +64,7 @@ void loop() {
   }
   
   setDigitalVoltage(digital_pin, HIGH);
-  dac_write_channel(DAC, DAC_CH1, 0);
+  setVoltageRaw(analog_output_pin, 0);
   
   Serial.print(a2_in_pulse, 5);
   Serial.print(",");
@@ -86,11 +81,7 @@ void setDigitalVoltage(int pin, int value) {
 }
 
 void setVoltageRaw(int pin, int value) {
-  Serial.print("Set analog voltage for pin ");
-  Serial.print(pin);
-  Serial.print(": ");
-  Serial.println(255* value/5);
-  analogWrite(pin, 255* value/5);
+  analogWrite(pin, 3.3*(value/255));
 }
 
 void setVoltage(int pin, float value) {

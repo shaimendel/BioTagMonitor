@@ -1,13 +1,9 @@
-#include <libmaple\dac.h>
-
 const int digital_pin = PC3;
 const int analogPins[2] = { PA1, PA2 };
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
+const int dac1 = PA4;
   
 void setup() {
-  dac_enable_channel(DAC, 1);
-  dac_init(DAC, DAC_CH1 | DAC_CH2);
-  
   pinMode(digital_pin, OUTPUT);
   uint8_t i;
   for (i = 0; i < analogCount; i++)
@@ -15,7 +11,7 @@ void setup() {
     pinMode(analogPins[i], INPUT_ANALOG);
   }
 
-  dac_write_channel(DAC, DAC_CH1, 0);
+  pinMode(dac1, OUTPUT);
   setDigitalVoltage(digital_pin, HIGH);
   
   // Open serial communications and wait for port to open:

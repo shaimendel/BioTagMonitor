@@ -130,7 +130,7 @@
             this.dacTextBox.Name = "dacTextBox";
             this.dacTextBox.Size = new System.Drawing.Size(100, 22);
             this.dacTextBox.TabIndex = 10;
-            this.dacTextBox.Text = "372";
+            this.dacTextBox.Text = "23";
             this.dacTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.genericTextBox_KeyPress);
             // 
             // label4
