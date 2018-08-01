@@ -62,11 +62,12 @@ namespace MeasureGraph
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string[] s = port.ReadLine().Replace("\r","").Split(',');
-            if (s.Length != 2)
+            string line = port.ReadLine().Replace("\r", "");
+            string[] s = line.Split(',');
+            if (s.Length < 2)
                 return;
             string date = DateTime.Now.ToString();
-            voltageLogFile.WriteLine(date + "," + s[0] + "," + s[1]);
+            voltageLogFile.WriteLine(date + "," + line);
             voltageLogFile.Flush();
 
             if (!shouldViewGraph)

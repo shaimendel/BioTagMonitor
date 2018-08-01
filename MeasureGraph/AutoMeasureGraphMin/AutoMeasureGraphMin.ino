@@ -1,14 +1,10 @@
-#include <libmaple/dac.h>
+#include <libmaple\dac.h>
 
 const int digital_pin = PC3;
 const int analogPins[2] = { PA1, PA2 };
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
-const int analog_output_pin = PA4;
-
-// the setup function runs once when you press reset or power the board
+  
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  pinMode(analog_output_pin, PWM);
   dac_enable_channel(DAC, 1);
   dac_init(DAC, DAC_CH1 | DAC_CH2);
   
@@ -27,53 +23,66 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-
-  //Serial.println("\n\nBeginning test:");
 }
 
 // the loop function runs over and over again forever
-volatile long dac_voltage = 372;
-volatile long pulse_length = 8;
+float voltage_in_pulse = 0;
+float current_in_pulse = 0;
+long num_of_relevant_samples = 0;
+unsigned long start_of_period = 0;
+bool in_pulse = false;
+
+const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 3;
 
 void loop() {
-  if (Serial.available() <= 0)
-    return;
-
-  String dac_voltage_string = Serial.readStringUntil('\n');
-  String pulse_length_string = Serial.readStringUntil('\n');
-  dac_voltage = atoi(dac_voltage_string.c_str());
-  pulse_length = atoi(pulse_length_string.c_str());
-//  Serial.print("Got voltage: ");
-//  Serial.print(dac_voltage_string.c_str());
-//  Serial.print(", pulse: ");
-//  Serial.println(pulse_length_string.c_str());
-//  Serial.println("---------------------------");
-  
-  setDigitalVoltage(digital_pin, LOW);
-  dac_write_channel(DAC, DAC_CH1, dac_voltage);
-
   unsigned long currentMillis = millis();
-  float a2_in_pulse = getVoltage(PA2); //Battery Voltage
-  float a1_in_pulse = getVoltage(PA1); //Current
+  float current_voltage = getVoltage(PA2); //Battery Voltage
+  float current_amper = getVoltage(PA1); //Current
 
-  while (millis() - currentMillis < pulse_length) {
-    float tmp = getVoltage(PA2);
-    if (tmp < a2_in_pulse) {
-      a2_in_pulse = tmp;
+  if (in_pulse) { 
+    if (current_amper < 0.05){
+      num_of_relevant_samples++;
     }
+     else
+      num_of_relevant_samples = 0;
+  }
+  else {
+    if (current_amper >= 0.05) {
+      num_of_relevant_samples++;
+    }
+     else
+      num_of_relevant_samples = 0;
+  }
 
-    tmp = getVoltage(PA1);
-    if (tmp > a1_in_pulse) {
-      a1_in_pulse = tmp;
+  if (num_of_relevant_samples >= NUM_OF_RELEVANT_SAMPLE_LIMIT) {
+    if (in_pulse) {
+      Serial.print(voltage_in_pulse, 5);
+      Serial.print(",");
+      Serial.print(current_in_pulse, 5);
+      Serial.print(",");
+      Serial.println(currentMillis - start_of_period);
     }
+    else {
+      //Nothing to do
+    }
+    
+    start_of_period = currentMillis;
+    in_pulse = !in_pulse;
+    num_of_relevant_samples = 0;
+    voltage_in_pulse = 100;
+    current_in_pulse = 0;
   }
   
-  setDigitalVoltage(digital_pin, HIGH);
-  dac_write_channel(DAC, DAC_CH1, 0);
-  
-  Serial.print(a2_in_pulse, 5);
-  Serial.print(",");
-  Serial.println(a1_in_pulse, 5);
+  if (in_pulse) {
+    if (current_voltage < voltage_in_pulse) {
+      voltage_in_pulse = current_voltage;
+    }
+
+    //tmp = getVoltage(PA1);
+    if (current_amper > current_in_pulse) {
+      current_in_pulse = current_amper;
+    }
+  }
 }
 
 void setDigitalVoltage(int pin, int value) {
