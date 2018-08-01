@@ -1,18 +1,13 @@
-const int digital_pin = PC3;
-const int analogPins[2] = { PA1, PA2 };
-const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
-const int dac1 = PA4;
-  
-void setup() {
-  pinMode(digital_pin, OUTPUT);
-  uint8_t i;
-  for (i = 0; i < analogCount; i++)
-  {
-    pinMode(analogPins[i], INPUT_ANALOG);
-  }
+#include "wiced.h"
+//#include "m4_express.h"
 
-  pinMode(dac1, OUTPUT);
-  setDigitalVoltage(digital_pin, HIGH);
+void setup() {
+  pinMode(SHUTDOWN_PIN, OUTPUT);
+  uint8_t i;
+  specific_board_init();
+
+  pinMode(DAC_PIN, OUTPUT);
+  setDigitalVoltage(SHUTDOWN_PIN, HIGH);
   
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -24,6 +19,8 @@ void setup() {
 // the loop function runs over and over again forever
 float voltage_in_pulse = 0;
 float current_in_pulse = 0;
+float tag_current_in_pulse = 0;
+
 long num_of_relevant_samples = 0;
 unsigned long start_of_period = 0;
 bool in_pulse = false;
@@ -32,8 +29,13 @@ const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 3;
 
 void loop() {
   unsigned long currentMillis = millis();
-  float current_voltage = getVoltage(PA2); //Battery Voltage
-  float current_amper = getVoltage(PA1); //Current
+  float current_voltage = getVoltage(BATTERY_VOLTAGE); //Battery Voltage
+  float current_amper = getVoltage(SIMULATED_LOAD_CURRENT); //Current
+  float tag_current_amper = 0;
+  bool should_measure_real_tag = (analogCount == 3);
+  
+  if (should_measure_real_tag)
+      tag_current_amper = getVoltage(TAG_LOAD_CURRENT); //Current
 
   if (in_pulse) { 
     if (current_amper < 0.05){
@@ -56,7 +58,13 @@ void loop() {
       Serial.print(",");
       Serial.print(current_in_pulse, 5);
       Serial.print(",");
-      Serial.println(currentMillis - start_of_period);
+      Serial.print(currentMillis - start_of_period);
+      if (should_measure_real_tag) {
+        Serial.print(",");
+        Serial.print(tag_current_in_pulse, 5);
+      }
+
+      Serial.println();
     }
     else {
       //Nothing to do
@@ -74,9 +82,12 @@ void loop() {
       voltage_in_pulse = current_voltage;
     }
 
-    //tmp = getVoltage(PA1);
     if (current_amper > current_in_pulse) {
       current_in_pulse = current_amper;
+    }
+
+    if (should_measure_real_tag && tag_current_amper > tag_current_in_pulse) {
+      tag_current_in_pulse = tag_current_amper;
     }
   }
 }
@@ -131,13 +142,13 @@ void printVoltage(int pin) {
 
 float getVoltage(int pin) {
   float       vbatLSB        = 0.80566F;  // mV per LSB
-    int   vbati = 0;    // Raw integer value
-    vbati = analogRead(pin);
-  // Display the value in volts (based on 3.3V VRef)
-    float vbatf = ((float)vbati * vbatLSB);
-    //Serial.print(vbatf/1000, 2);
-    //Serial.println("V");
-    return vbatf/1000;
+  int   vbati = 0;    // Raw integer value
+  vbati = analogRead(pin);
+// Display the value in volts (based on 3.3V VRef)
+  float vbatf = ((float)vbati * vbatLSB);
+  //Serial.print(vbatf/1000, 2);
+  //Serial.println("V");
+  return vbatf/1000;
 }
 
 
