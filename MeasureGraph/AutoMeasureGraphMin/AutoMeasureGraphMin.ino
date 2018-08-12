@@ -1,5 +1,5 @@
-#include "wiced.h"
-//#include "m4_express.h"
+//#include "wiced.h"
+#include "m4_express.h"
 
 void setup() {
   pinMode(SHUTDOWN_PIN, OUTPUT);
@@ -17,9 +17,8 @@ void setup() {
 }
 
 // the loop function runs over and over again forever
-float voltage_in_pulse = 0;
+float voltage_in_pulse = 0; 
 float current_in_pulse = 0;
-float tag_current_in_pulse = 0;
 
 long num_of_relevant_samples = 0;
 unsigned long start_of_period = 0;
@@ -30,22 +29,17 @@ const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 3;
 void loop() {
   unsigned long currentMillis = millis();
   float current_voltage = getVoltage(BATTERY_VOLTAGE); //Battery Voltage
-  float current_amper = getVoltage(SIMULATED_LOAD_CURRENT); //Current
-  float tag_current_amper = 0;
-  bool should_measure_real_tag = (analogCount == 3);
+  float current_amper = getVoltage(TAG_LOAD_CURRENT); //Current
   
-  if (should_measure_real_tag)
-      tag_current_amper = getVoltage(TAG_LOAD_CURRENT); //Current
-
   if (in_pulse) { 
-    if (current_amper < 0.05){
+    if (current_amper < 0.1){
       num_of_relevant_samples++;
     }
      else
       num_of_relevant_samples = 0;
   }
   else {
-    if (current_amper >= 0.05) {
+    if (current_amper >= 0.1) {
       num_of_relevant_samples++;
     }
      else
@@ -59,10 +53,6 @@ void loop() {
       Serial.print(current_in_pulse, 5);
       Serial.print(",");
       Serial.print(currentMillis - start_of_period);
-      if (should_measure_real_tag) {
-        Serial.print(",");
-        Serial.print(tag_current_in_pulse, 5);
-      }
 
       Serial.println();
     }
@@ -84,10 +74,6 @@ void loop() {
 
     if (current_amper > current_in_pulse) {
       current_in_pulse = current_amper;
-    }
-
-    if (should_measure_real_tag && tag_current_amper > tag_current_in_pulse) {
-      tag_current_in_pulse = tag_current_amper;
     }
   }
 }

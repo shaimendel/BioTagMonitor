@@ -1,8 +1,8 @@
 const int SHUTDOWN_PIN = PC3;
 const int BATTERY_VOLTAGE = PA2;
 const int SIMULATED_LOAD_CURRENT = PA1;
-const int TAG_LOAD_CURRENT = PA4; // UNUSED
-const int analogPins[2] = { SIMULATED_LOAD_CURRENT, BATTERY_VOLTAGE };
+const int TAG_LOAD_CURRENT = PA1;
+const int analogPins[2] = { SIMULATED_LOAD_CURRENT, BATTERY_VOLTAGE, TAG_LOAD_CURRENT };
 const int DAC_PIN = PA4;
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
 

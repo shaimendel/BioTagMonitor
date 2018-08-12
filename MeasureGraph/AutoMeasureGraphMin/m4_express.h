@@ -6,5 +6,6 @@ const int analogPins[3] = { SIMULATED_LOAD_CURRENT, BATTERY_VOLTAGE, TAG_LOAD_CU
 const int DAC_PIN = A0;
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
 
-void specific_board_init() {}
-
+void specific_board_init() {
+  analogReadResolution(12);
+}
