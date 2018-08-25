@@ -26,6 +26,7 @@ namespace MeasureGraph
         private string dacOutputData;
         private string pulseIntervalData;
         private Task simulationTask = null;
+        private bool isRealTag = true;
 
         struct Pulse {
             public string voltage;
@@ -134,6 +135,8 @@ namespace MeasureGraph
             }
 
             goButton.Enabled = false;
+            //simulationPanel.Enabled = false;
+            checkBox1.Enabled = false;
 
             voltageLogFile = File.CreateText(Path.Combine(VOLTAGE_LOG_DIR, DateTime.Now.ToString("dd-MM-yyyy_HH-mm-ss") + ".txt"));
             voltageLogFile.WriteLine("date,voltage,current");
@@ -146,24 +149,22 @@ namespace MeasureGraph
             port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
             goButton.Enabled = false;
 
+            port.WriteLine(isRealTag ? "yes" : "no");
+
             createSimulationTaskIfNeeded();
         }
 
         private void createSimulationTaskIfNeeded()
-
         {
-            if (!simulationPanel.Enabled || simulationTask != null || goButton.Enabled)
+            if (isRealTag)
                 return;
 
             simulationTask = Task.Run(() => {
                 while (true)
                 {
-                    if (simulationPanel.Enabled)
-                    {
-                        string d = Volatile.Read(ref dacOutputData);
-                        port.WriteLine(d);
-                        port.WriteLine(Volatile.Read(ref pulseLengthData));
-                    }
+                    string d = Volatile.Read(ref dacOutputData);
+                    port.WriteLine(d);
+                    port.WriteLine(Volatile.Read(ref pulseLengthData));
                     Thread.Sleep(int.Parse(Volatile.Read(ref pulseIntervalData)));
                 }
             });
@@ -199,7 +200,8 @@ namespace MeasureGraph
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             simulationPanel.Enabled = !simulationPanel.Enabled;
-            createSimulationTaskIfNeeded();
+            isRealTag = !isRealTag;
+            //createSimulationTaskIfNeeded();
         }
 
         private void measureChart_DataClick(object sender, ChartPoint p)

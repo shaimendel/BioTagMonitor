@@ -6,14 +6,24 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Threading;
 using System.IO.Ports;
+using System.IO;
+using System.Windows.Forms;
 
 namespace Measure
 {
     public partial class Form1 : Form
     {
+        const string VOLTAGE_LOG_DIR = "Voltage";
         private SerialPort port;
+        private StreamWriter voltageLogFile = null;
+        private string pulseLengthData;
+        private string dacOutputData;
+        private string pulseIntervalData;
+        private Task simulationTask = null;
+        private bool isClosing = false;
+        private bool isRealTag = true;
 
         public Form1()
         {
@@ -23,28 +33,42 @@ namespace Measure
                 comPortComboBox.SelectedItem = comPortComboBox.Items[0];
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
-
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            // Show all the incoming data in the port's buffer
-            String[] data = { port.ReadExisting() };
-            BeginInvoke(new setLog(appendLog), data);
+            string line = port.ReadLine().Replace("\r", "");
+            string[] s = line.Split(',');
+
+            if (s.Length < 2)
+                return;
+            string date = DateTime.Now.ToString();
+            voltageLogFile.WriteLine(date + "," + line);
+            voltageLogFile.Flush();
         }
 
-        private void appendLog(String data)
+        private delegate void updateMeasure(string voltage, string current, string date, string[] fullData);
+
+        private void updateSampleData()
         {
-            String formattedData = DateTime.Now.ToString() + "\n" + data;
-            richTextBox2.Text = formattedData;
-            richTextBox1.AppendText(formattedData);
+            pulseIntervalData = pulseIntervalTextBox.Text;
+            dacOutputData = dacTextBox.Text;
+            pulseLengthData = pulseTextBox.Text;
         }
-        private delegate void setLog(String text);
 
         private void goButton_Click(object sender, EventArgs e)
         {
-            port = new SerialPort(comPortComboBox.SelectedItem.ToString(), 9600, Parity.None, 8, StopBits.One);
+            updateSampleData();
+            port = new SerialPort(comPortComboBox.SelectedItem.ToString(), 14400, Parity.None, 8, StopBits.One);
+
+            if (!Directory.Exists(VOLTAGE_LOG_DIR))
+            {
+                Directory.CreateDirectory(VOLTAGE_LOG_DIR);
+            }
+
+            goButton.Enabled = false;
+            checkBox1.Enabled = false;
+
+            voltageLogFile = File.CreateText(Path.Combine(VOLTAGE_LOG_DIR, DateTime.Now.ToString("dd-MM-yyyy_HH-mm-ss") + ".txt"));
+            voltageLogFile.WriteLine("date,voltage,current");
 
             // Begin communications
             port.Open();
@@ -52,15 +76,75 @@ namespace Measure
             port.RtsEnable = true;
 
             port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
+            OperatingSystem osVersion = Environment.OSVersion;
+            if (!osVersion.VersionString.Contains("Windows"))
+            {
+                Console.WriteLine(osVersion.VersionString);
+                Task.Run(() => {
+                    while (true)
+                    {
+                        if (isClosing)
+                            return;
+
+                        if (port.BytesToRead > 0)
+                            port_DataReceived(null, null);
+
+                        Thread.Sleep(50);
+                    }
+                });
+            }
+
+
+            goButton.Enabled = false;
+
+            port.WriteLine(isRealTag ? "yes" : "no");
+
+            createSimulationTaskIfNeeded();
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        private void createSimulationTaskIfNeeded()
         {
-            return;
-            // set the current caret position to the end
-            richTextBox1.SelectionStart = richTextBox1.Text.Length;
-            // scroll it automatically
-            richTextBox1.ScrollToCaret();
+            if (isRealTag)
+                return;
+
+            simulationTask = Task.Run(() => {
+                while (true)
+                {
+                    string d = Volatile.Read(ref dacOutputData);
+                    port.WriteLine(d);
+                    port.WriteLine(Volatile.Read(ref pulseLengthData));
+                    Thread.Sleep(int.Parse(Volatile.Read(ref pulseIntervalData)));
+                }
+            });
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (voltageLogFile != null)
+            {
+                voltageLogFile.Dispose();
+                port.Close();
+            }
+        }
+
+        private void genericTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void updateButton_Click(object sender, EventArgs e)
+        {
+            updateSampleData();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            simulationPanel.Enabled = !simulationPanel.Enabled;
+            isRealTag = !isRealTag;
+            //createSimulationTaskIfNeeded();
         }
     }
 }

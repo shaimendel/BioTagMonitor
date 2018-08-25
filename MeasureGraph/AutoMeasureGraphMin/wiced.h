@@ -6,7 +6,7 @@ const int analogPins[2] = { SIMULATED_LOAD_CURRENT, BATTERY_VOLTAGE, TAG_LOAD_CU
 const int DAC_PIN = PA4;
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
 
-void specific_board_init() {
+void inline specific_board_init() {
   for (int i = 0; i < analogCount; i++)
   {
     pinMode(analogPins[i], INPUT_ANALOG);
