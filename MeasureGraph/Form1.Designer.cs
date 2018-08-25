@@ -85,6 +85,7 @@
             this.measureChart.Size = new System.Drawing.Size(1310, 709);
             this.measureChart.TabIndex = 6;
             this.measureChart.Text = "measureChart";
+            this.measureChart.DataClick += new LiveCharts.Events.DataClickHandler(this.measureChart_DataClick);
             // 
             // drawCheckBox
             // 

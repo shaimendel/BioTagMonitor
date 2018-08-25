@@ -13,3 +13,7 @@ void specific_board_init() {
   }
 }
 
+int inline analogReadFast(byte ADCpin) {
+  return analogRead(ADCpin);
+}
+
