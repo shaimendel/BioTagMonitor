@@ -43,6 +43,9 @@ namespace MeasureGraph
                 Title = "Voltage/Current during peak",
             });
 
+            if (fullData[4].StartsWith("*") || String.IsNullOrEmpty(fullData[4].Trim()))
+                return;
+
             for (int i = 4; i < fullData.Length; i++)
             {
                 string[] sampleData = fullData[i].Split('@');

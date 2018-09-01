@@ -17,8 +17,11 @@ long num_of_relevant_samples = 0;
 unsigned long start_of_period = 0;
 unsigned long start_of_period_micros = 0;
 bool in_pulse = false;
+bool too_long_pulse = false;
+int long_pulse_seconds = 0;
 
 const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 4;
+const int TOO_LONG_PULSE_LIMIT_MS = 25;
 
 void real_tag_loop() {
   unsigned long currentMillis = millis();
@@ -70,6 +73,8 @@ void real_tag_loop() {
     voltage_in_pulse = 100;
     current_in_pulse = 0;
     vector_reset(real_pulse_samples);
+    too_long_pulse = false;
+    long_pulse_seconds = 0;
   }
   
   if (in_pulse) {
@@ -81,12 +86,34 @@ void real_tag_loop() {
       current_in_pulse = current_amper;
     }
 
-    addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() - start_of_period_micros);
+    if (!too_long_pulse) {
+      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() - start_of_period_micros);
+
+      if (currentMillis - start_of_period > TOO_LONG_PULSE_LIMIT_MS) {
+        too_long_pulse = true;
+        long_pulse_seconds = (currentMillis - start_of_period) / 1000;
+        vector_reset(real_pulse_samples);
+      }
+    }
   }
   else {
     if (current_voltage > voltage_not_in_pulse) {
       voltage_not_in_pulse = current_voltage;
     }
   }
-}
 
+  if (too_long_pulse && (currentMillis - start_of_period)/1000 > long_pulse_seconds){
+      Serial.print(voltage_in_pulse, 5);
+      Serial.print(",");
+      Serial.print(current_in_pulse, 5);
+      Serial.print(",");
+      Serial.print(currentMillis - start_of_period);
+      Serial.print(",");
+      Serial.print(voltage_not_in_pulse, 5);
+      Serial.print(",");
+      Serial.print("*");
+
+      Serial.println();
+      long_pulse_seconds++;
+  }
+}
