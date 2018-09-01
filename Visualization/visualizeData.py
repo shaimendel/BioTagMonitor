@@ -32,7 +32,7 @@ class PointBrowser(object):
 		current = []
 
 		for sample in self.pulses[ind]:
-			if sample.startswith("*"):
+			if sample.startswith("*") or not sample.strip():
 				return
 			[sampleVoltage, sampleCurrent, sampleTime] = sample.split("@")
 			voltage.append(float(sampleVoltage))

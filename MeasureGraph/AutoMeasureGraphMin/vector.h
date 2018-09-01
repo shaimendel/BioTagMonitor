@@ -1,11 +1,5 @@
-#ifndef VECTOR_H__
-#define VECTOR_H__
-
-typedef struct pulseData_ {
-    float voltage;
-    float current;
-    int micros_from_start;
-} pulseData;
+#pragma once
+#include "pulse.h"
 
 typedef struct vector_ {
     pulseData* data;
@@ -22,6 +16,3 @@ void vector_delete(vector*, int);
 void vector_free(vector*);
 void vector_reset(vector*);
 void vector_serialize(vector*);
-
-
-#endif

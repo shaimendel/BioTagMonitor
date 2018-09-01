@@ -1,6 +1,7 @@
 #include "real_tag.h"
 #include "arch.h"
 #include "utils.h"
+#include "last_samples.h"
 
 vector* real_pulse_samples;
 
@@ -36,13 +37,12 @@ void real_tag_loop() {
       num_of_relevant_samples = 0;
   }
   else {
-    if (current_amper >= 0.05) {
+    last_samples_add(current_voltage, current_amper);
+    if (current_amper >= 0.1) {
       num_of_relevant_samples++;
-      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() - start_of_period_micros);
     }
      else {
       num_of_relevant_samples = 0;
-      vector_reset(real_pulse_samples);
      }
   }
 
@@ -61,9 +61,11 @@ void real_tag_loop() {
       Serial.println();
 
       voltage_not_in_pulse = 0;
+      vector_reset(real_pulse_samples);
     }
     else {
-      //Nothing to do
+      last_samples_fill_vector(real_pulse_samples);
+      last_samples_reset();
     }
     
     start_of_period = currentMillis;
@@ -72,7 +74,6 @@ void real_tag_loop() {
     num_of_relevant_samples = 0;
     voltage_in_pulse = 100;
     current_in_pulse = 0;
-    vector_reset(real_pulse_samples);
     too_long_pulse = false;
     long_pulse_seconds = 0;
   }
@@ -87,7 +88,7 @@ void real_tag_loop() {
     }
 
     if (!too_long_pulse) {
-      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() - start_of_period_micros);
+      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() + LAST_SAMPLES_AMOUNT - start_of_period_micros);
 
       if (currentMillis - start_of_period > TOO_LONG_PULSE_LIMIT_MS) {
         too_long_pulse = true;
