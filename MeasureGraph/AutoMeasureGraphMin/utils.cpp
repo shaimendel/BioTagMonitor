@@ -24,7 +24,7 @@ void setVoltageRaw(int pin, int value) {
 //  Serial.print(pin);
 //  Serial.print(": ");
 //  Serial.println(255* value/5);
-  analogWrite(pin, 255* value/5);
+  analogWrite(pin, value);
 }
 
 void setVoltage(int pin, float value) {
@@ -61,4 +61,3 @@ float getVoltage(int pin) {
   //Serial.println("V");
   return vbatf/1000;
 }
-

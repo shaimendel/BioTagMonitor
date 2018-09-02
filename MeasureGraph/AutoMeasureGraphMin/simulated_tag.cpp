@@ -8,7 +8,7 @@ void simulated_tag_setup(vector* v) {
     simulated_pulse_samples = v;
 }
 
-volatile long dac_voltage = 372;
+volatile long dac_voltage = 20;
 volatile long pulse_length = 8;
 
 void simulated_tag_loop() {
