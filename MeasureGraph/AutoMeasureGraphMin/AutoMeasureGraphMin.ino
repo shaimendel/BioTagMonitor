@@ -1,4 +1,4 @@
-#include "arch.h"
+ #include "arch.h"
 #include "vector.h"
 #include "utils.h"
 #include "real_tag.h"
@@ -39,4 +39,3 @@ void setup() {
 void loop() {
   isRealTag ? real_tag_loop() : simulated_tag_loop();
 }
-

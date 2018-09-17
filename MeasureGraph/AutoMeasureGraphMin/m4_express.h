@@ -10,6 +10,7 @@ const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
 
 void inline specific_board_init() {
   analogReadResolution(12);
+  analogWriteResolution(8);
 }
 
 #define ADC ADC0

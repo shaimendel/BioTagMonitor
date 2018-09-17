@@ -69,6 +69,8 @@ def displayGraph(showAllData):
 			text = inputFile.readlines()[-3601:][1:]
 
 		for row in text:
+			if not row.strip():
+				continue
 			splittedRow = row.split(",");
 			voltInPulse.append(float(splittedRow[1]))
 			currentInPulse.append(float(splittedRow[2]))
