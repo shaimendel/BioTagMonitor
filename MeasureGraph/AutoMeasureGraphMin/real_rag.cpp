@@ -20,9 +20,10 @@ unsigned long start_of_period_micros = 0;
 bool in_pulse = false;
 bool too_long_pulse = false;
 int long_pulse_seconds = 0;
+unsigned long last_samples_offset = 0;
 
 const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 4;
-const int TOO_LONG_PULSE_LIMIT_MS = 25;
+const int TOO_LONG_PULSE_LIMIT_MS = 30;
 
 void real_tag_loop() {
   unsigned long currentMillis = millis();
@@ -37,8 +38,8 @@ void real_tag_loop() {
       num_of_relevant_samples = 0;
   }
   else {
-    last_samples_add(current_voltage, current_amper);
-    if (current_amper >= 0.1) {
+    last_samples_add(current_voltage, current_amper, micros() - start_of_period_micros);
+    if (current_amper >= 0.06) {
       num_of_relevant_samples++;
     }
      else {
@@ -64,6 +65,7 @@ void real_tag_loop() {
       vector_reset(real_pulse_samples);
     }
     else {
+      last_samples_offset = last_sample_get_micros_offset();
       last_samples_fill_vector(real_pulse_samples);
       last_samples_reset();
     }
@@ -88,7 +90,7 @@ void real_tag_loop() {
     }
 
     if (!too_long_pulse) {
-      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() + LAST_SAMPLES_AMOUNT - start_of_period_micros);
+      addPulseToVector(real_pulse_samples, current_voltage, current_amper, micros() + last_samples_offset - start_of_period_micros);
 
       if (currentMillis - start_of_period > TOO_LONG_PULSE_LIMIT_MS) {
         too_long_pulse = true;
