@@ -52,6 +52,33 @@ class PointBrowser(object):
 		plt.ylabel("Voltage")
 		
 		plt.show()
+
+	def showSinglePoint(self, pulse):
+		microsFromStart = []
+		voltage = []
+		current = []
+
+		for sample in pulse:
+			if sample.startswith("*") or not sample.strip():
+				return
+			[sampleVoltage, sampleCurrent, sampleTime] = sample.split("@")
+			voltage.append(float(sampleVoltage))
+			current.append(float(sampleCurrent))
+			microsFromStart.append(int(sampleTime))
+
+		fig2, ax2 = plt.subplots()
+		ax2.plot(microsFromStart, voltage, "r", label = "Voltage In Pulse")
+		ax2.set_ylim(0, 3.5)
+		ax2.plot(microsFromStart, current, "b", label = "Current In Pulse")
+
+		leg2 = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+		leg2.get_frame().set_alpha(0.5)
+
+		plt.title("Sample no 0")
+		plt.xlabel("Micros From Start")
+		plt.ylabel("Voltage")
+		
+		plt.show()
 		
 
 
@@ -76,13 +103,18 @@ def displayGraph(showAllData):
 			currentInPulse.append(float(splittedRow[2]))
 			voltInRest.append(float(splittedRow[4]))
 
-			if not showAllData:
+			if not showAllData or len(text) == 1:
 				pulses.append(splittedRow[5:])
 			currDate = datetime.strptime(splittedRow[0], TIME_FORMAT)
 			if firstDate:
 				x.append((currDate - firstDate).total_seconds())
 			else:
 				firstDate = currDate
+
+	if len(pulses) == 1:
+		browser = PointBrowser(pulses)
+		browser.showSinglePoint(pulses[0])
+		return
 
 	fig, ax = plt.subplots()
 	ax.plot(x, voltInPulse, "r", label = "Voltage In Pulse", picker=1)
@@ -119,8 +151,17 @@ parser.add_argument('filepath', metavar='FILE_PATH',
 parser.add_argument("--full", type=str2bool, nargs='?',
 						const=True, default=False, dest="isFull",
 						help="Should sample all")
+parser.add_argument("--os", nargs='?',
+						const=True, default="windows", dest="os",
+						help="The OS the log captured on. windows/linux")
 
 args = parser.parse_args()
 
 FILE_NAME = args.filepath;
+
+if args.os.lower() == "windows":
+	TIME_FORMAT = TIME_FORMAT_WINDOWS
+else:
+	TIME_FORMAT = TIME_FORMAT_LINUX
+
 displayGraph(args.isFull)
