@@ -5,7 +5,7 @@ One of the problems is to choose the correct battery to put within the tag itsel
 Until now, the setup and procedure of comparing different batteries performance included:
 - A mocked tag: A dedicated circuit that used the battery in the same way the tag does
 - The battery itself
-- Fluke and other expensive equipment to measure the voltage and current along time
+- Scope and other expensive equipment to measure the voltage and current along time
 
 This procedure is long, expensive and uncomfortable.
 This project concentrates on biological tags that are put on birds, these tags send a short pulse (8-10ms) of location every ~1 second.
