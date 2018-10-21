@@ -76,7 +76,94 @@
 
 \begin_body
 
+\begin_layout Title
+A System to Characterize Battery Behavior in Miniature Wildlife Tags
+\begin_inset Newline newline
+\end_inset
+
+and Discoveries Made using It
+\end_layout
+
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+First paper is at D:
+\backslash
+Dropbox
+\backslash
+Projects
+\backslash
+ti-ccs5-projects
+\backslash
+matlab
+\backslash
+battery
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Section
+Background
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Appendix C"
+key "MartinPhD1999"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Characterization System Design
+\end_layout
+
+\begin_layout Subsection
+Platform
+\end_layout
+
+\begin_layout Subsection
+Hardware Design
+\end_layout
+
+\begin_layout Subsection
+Software and Protocol Design
+\end_layout
+
+\begin_layout Section
+Experimental Results
+\end_layout
+
+\begin_layout Section
+Implications on Tag Design
+\end_layout
+
+\begin_layout Section
+Conclusions
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "battery"
+options "plain"
+
+\end_inset
+
 
 \end_layout
 
