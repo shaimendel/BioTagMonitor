@@ -127,6 +127,73 @@ literal "false"
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Quotes eld
+\end_inset
+
+a bulk capacitor smooths the large current pulse that occurs during transmission
+ to prevent damage to the battery
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "AcousticTransForSalmon2015"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Dressler et al.
+ describe a lightweight wildlife tag that uses a capacitor 
+\begin_inset Quotes eld
+\end_inset
+
+to provide peak operating current for the system
+\begin_inset Quotes erd
+\end_inset
+
+ because the primary Lithium coin cell can only deliver about 0.5
+\begin_inset space ~
+\end_inset
+
+mA, not enough to power the tag when the radio is active
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BatsInTheWild2016"
+literal "false"
+
+\end_inset
+
+.
+ A block diagram in this paper shows that the battery is connected to the
+ capacitor through a current-limiting resistor, but the paper does discuss
+ or explain the function of this resistor.
+\end_layout
+
 \begin_layout Section
 Characterization System Design
 \end_layout
@@ -145,6 +212,80 @@ Software and Protocol Design
 
 \begin_layout Section
 Experimental Results
+\end_layout
+
+\begin_layout Standard
+A miniature 330
+\begin_inset space ~
+\end_inset
+
+uF tantalum capacitor, F950J337KBAAQ2
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "TantalumF95"
+literal "false"
+
+\end_inset
+
+, that is used in most of the ATLAS and Vildehaye tags produced so far (see,
+ e.g.,
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vildehaye-wp"
+literal "false"
+
+\end_inset
+
+).
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Properties: 3.5 by 2.8 by 1.8 mm; 6.3V leakage current of 20.8uA at 20C, temperature
+ dependent, at most 10 more at 85C, ESR of 0.6Ohm at 100kHz
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A miniature 330uF (nominal) ceramic capacitor, JMK325ABJ337MM-P
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ceramic330uF"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+3.2 by 2.5 by 2.5mm; 6.3V; ~220uF at DC and frequencies below 100kHz; Strong
+ reduction in capacitance due to DC bias (~-40% at 3V); extremely low ESR,
+ 1mOhm at 100kHz, about 10mOhm at 1kHz.
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
