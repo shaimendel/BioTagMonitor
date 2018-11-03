@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from os.path import basename
 from datetime import datetime,timedelta
@@ -99,6 +98,8 @@ def displayGraph(showAllData):
 			if not row.strip():
 				continue
 			splittedRow = row.split(",");
+			if (len(splittedRow) < 4):
+				continue
 			voltInPulse.append(float(splittedRow[1]))
 			currentInPulse.append(float(splittedRow[2]))
 			voltInRest.append(float(splittedRow[4]))
