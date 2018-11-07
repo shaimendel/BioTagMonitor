@@ -21,38 +21,7 @@ class PointBrowser(object):
 	def __init__(self, pulses):
 		self.pulses = pulses
 
-	def onpick(self, event):
-		line = event.artist
-		xdata, ydata = line.get_data()
-		ind = event.ind[0]
-
-		microsFromStart = []
-		voltage = []
-		current = []
-
-		for sample in self.pulses[ind]:
-			if sample.startswith("*") or not sample.strip():
-				return
-			[sampleVoltage, sampleCurrent, sampleTime] = sample.split("@")
-			voltage.append(float(sampleVoltage))
-			current.append(float(sampleCurrent))
-			microsFromStart.append(int(sampleTime))
-
-		fig2, ax2 = plt.subplots()
-		ax2.plot(microsFromStart, voltage, "r", label = "Voltage In Pulse")
-		ax2.set_ylim(0, 3.5)
-		ax2.plot(microsFromStart, current, "b", label = "Current In Pulse")
-
-		leg2 = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
-		leg2.get_frame().set_alpha(0.5)
-
-		plt.title("Sample no " + str(ind))
-		plt.xlabel("Micros From Start")
-		plt.ylabel("Voltage")
-		
-		plt.show()
-
-	def showSinglePoint(self, pulse):
+	def drawPulse(self, pulse, pulseIndex):
 		microsFromStart = []
 		voltage = []
 		current = []
@@ -62,22 +31,41 @@ class PointBrowser(object):
 				return
 			[sampleVoltage, sampleCurrent, sampleTime] = sample.split("@")
 			voltage.append(float(sampleVoltage))
-			current.append(float(sampleCurrent))
+			current.append(float(sampleCurrent)/11)
 			microsFromStart.append(int(sampleTime))
 
 		fig2, ax2 = plt.subplots()
-		ax2.plot(microsFromStart, voltage, "r", label = "Voltage In Pulse")
+		volt_in_pulse = ax2.plot(microsFromStart, voltage, "r", label = "Voltage In Pulse")
 		ax2.set_ylim(0, 3.5)
-		ax2.plot(microsFromStart, current, "b", label = "Current In Pulse")
+		ax2.set_ylabel('Voltage', color='r')
 
-		leg2 = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
-		leg2.get_frame().set_alpha(0.5)
 
-		plt.title("Sample no 0")
+		ax3 = ax2.twinx()
+		curr_in_pulse = ax3.plot(microsFromStart, current, "b", label = "Current In Pulse")
+		ax3.set_ylabel('Current', color='b')
+		ax3.set_ylim(0, 0.3)
+
+		fig2.tight_layout()
+
+		lns = curr_in_pulse+volt_in_pulse
+		labs = [l.get_label() for l in lns]
+		leg = plt.legend(lns, labs, loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+		leg.get_frame().set_alpha(0.5)
+
+		plt.title("Sample no " + str(pulseIndex))
 		plt.xlabel("Micros From Start")
-		plt.ylabel("Voltage")
 		
 		plt.show()
+
+	def onpick(self, event):
+		line = event.artist
+		xdata, ydata = line.get_data()
+		ind = event.ind[0]
+
+		self.drawPulse(self.pulses[ind], ind)
+
+	def showSinglePoint(self, pulse):
+		self.drawPulse(pulse, 0)
 		
 
 
@@ -101,7 +89,7 @@ def displayGraph(showAllData):
 			if (len(splittedRow) < 4):
 				continue
 			voltInPulse.append(float(splittedRow[1]))
-			currentInPulse.append(float(splittedRow[2]))
+			currentInPulse.append(float(splittedRow[2])/11)
 			voltInRest.append(float(splittedRow[4]))
 
 			if not showAllData or len(text) == 1:
@@ -118,17 +106,24 @@ def displayGraph(showAllData):
 		return
 
 	fig, ax = plt.subplots()
-	ax.plot(x, voltInPulse, "r", label = "Voltage In Pulse", picker=1)
-	ax.set_ylim(0, 3.5)
-	ax.plot(x, currentInPulse, "b", label = "Current In Pulse")
-	ax.plot(x, voltInRest, "g", label = "Voltage In Rest")
+	curr_in_pulse = ax.plot(x, currentInPulse, "b", label = "Current In Pulse")
+	ax.set_ylabel('Current', color='b')
+	ax.set_ylim(0, 0.3)
 
-	leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+	ax2 = ax.twinx()
+	volt_in_pulse = ax2.plot(x, voltInPulse, "r", label = "Voltage In Pulse", picker=1)
+	ax2.set_ylim(0, 3.5)
+	volt_in_rest = ax2.plot(x, voltInRest, "g", label = "Voltage In Rest")
+	ax2.set_ylabel('Voltage', color='r')
+	fig.tight_layout()
+
+	lns = curr_in_pulse+volt_in_pulse+volt_in_rest
+	labs = [l.get_label() for l in lns]
+	leg = plt.legend(lns, labs, loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
 	leg.get_frame().set_alpha(0.5)
 
 	plt.title(basename(FILE_NAME))
 	plt.xlabel("Seconds From Start")
-	plt.ylabel("Voltage")
 
 	if not showAllData:
 		browser = PointBrowser(pulses)
