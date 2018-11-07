@@ -1,0 +1,659 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+A System to Characterize Battery Behavior in Miniature Wildlife Tags
+\begin_inset Newline newline
+\end_inset
+
+Reveals Correctable Reliability Weaknesses
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+First paper is at D:
+\backslash
+Dropbox
+\backslash
+Projects
+\backslash
+ti-ccs5-projects
+\backslash
+matlab
+\backslash
+battery
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Powering miniature wildlife tags remains a significant challenge, even after
+ more than a half-century of experience with such tags.
+ There are several reasons that this problem has not been resolved.
+ First, modern wildlife tags are based on CMOS digital electronic that require
+ at least 1.8V, whereas some cell chemistries only deliver around 1.5V, requiring
+ a pair of batteries (silver oxide and zinc air) or a DC-DC boost converter.
+ Second, many miniature batteries cannot deliver the peak current that transmitt
+ing tags require, often around 20mA; this is true both for radio transmitters
+ and for ultrasonic transmitters, which are used to track fish.
+ Third, the market for suitable batteries is small and fragmented, limiting
+ commercial interest in the development of batteries that better match the
+ requirements.
+ Fourth, the processes inside batteries are complex and can lead to tag
+ failure even when if the voltage and peak current requirements are met.
+ We will substantiate all of these claims below.
+\end_layout
+
+\begin_layout Standard
+In particular, users of tags designed by one of the authors complained that
+ a non-trivial number of tags have failed, with a variety of batteries,
+ including both miniature batteries and larger ones (e.g., AA size), in spite
+ of a careful study to characterize batteries that should work well with
+ the tags
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+, and in spite of an on-tag mechanism designed to mitigate such problems
+ (a reservoir or bulk capacitor
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "TagsEDERC2014,ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Trying to replicate and study these failures in the lab proved difficult.
+ In some cases, tag failure depleted the battery and when attached to another
+ battery, the tag worked without failing.
+ In other cases, we were able to replicate failures, but capturing all the
+ relevant voltages and currents at the time of failure on an oscilloscope
+ proved difficult.
+\end_layout
+
+\begin_layout Standard
+These user-reported failures and the difficulty of diagnosing them motivated
+ the research reported here.
+ We decided to build a specialized but easy-to-replicate test instrument
+ that would allow us to address the following problems
+\end_layout
+
+\begin_layout Itemize
+The instrument should allow us to capture all the current and voltage measuremen
+ts close to the time of failure, both before and after the failure.
+\end_layout
+
+\begin_layout Itemize
+The instrument should allow us to perform large-scale testing of batteries,
+ both when they power actual tags and when supplying simulated loads.
+\end_layout
+
+\begin_layout Standard
+We also felt that an easy-to-replicate test instrument could also achieve
+ additional goals, which were less critical but still useful:
+\end_layout
+
+\begin_layout Itemize
+Users (biologists and their technicians) should be able to use it to perform
+ the same types of analyses.
+ 
+\end_layout
+
+\begin_layout Itemize
+Users should be able to use the instrument to measure the life spans of
+ tags with different configurations (transmission rates and power, etc)
+ and different batteries.
+\end_layout
+
+\begin_layout Itemize
+Users should be able to monitor the current consumption of tags using the
+ instrument.
+ This monitoring can be done using an oscilloscope and a current-sensing
+ resistor, but not all tag users have an oscilloscope, setting up the scope
+ to monitor current consumption is non-trivial (not difficult to frequent
+ users of oscilloscope, but non trivial for casual users).
+ The instrument is also considerably less expensive than an oscilloscope.
+ 
+\end_layout
+
+\begin_layout Standard
+The instrument and the software system that drives it have indeed enabled
+ us to discover one cause of failures that we were not aware of.
+ To the best of our knowledge, has not been described in the literature
+ on the design of wildlife tracking and sensing tags.
+ Once the cause of faults was discovered, we have also found a way to eliminate
+ it.
+ Briefly, we discovered that the reservoir capacitor that is used to mitigate
+ the high internal resistance of some battery types causes a phenomenon
+ called 
+\emph on
+concentration polarization 
+\emph default
+in the battery, where the internal resistance rises temporarily to a level
+ low enough to cause tag failure.
+ We also discovered that a current-limiting capacitor can eliminate or mitigate
+ the problem; this reduces the energy efficiency of the tag, but not dramaticall
+y.
+\end_layout
+
+\begin_layout Standard
+The rest of this paper is organized as follows.
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+COMPLETE
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Background
+\end_layout
+
+\begin_layout Standard
+Almost all wildlife tags today use a microcontroller; many also contain
+ a radio transmitter or transceiver or an ultrasonic transducer, sometimes
+ sensors, and sometimes an additional memory chip.
+ Early radio tag designs
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "miniature-vhf"
+literal "false"
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+cite Cochran & Lord
+\end_layout
+
+\end_inset
+
+ were completely analog and are easier to power, but are outside the scope
+ of this paper.
+ Integrated circuits that are appropriate for wildlife tags require at least
+ 1.8V (often 1.8 to 3.6 or 3.8V).
+ Transmitting a low-power radio signal from an integrated transceiver usually
+ requires 10mA or more; powering a GPS receiver requires even more, often
+ around 30mA.
+ Relatively large Lithium primary batteries can provide the required voltage
+ and current, but small Lithium coin cells and other miniature batteries
+ (e.g., silver oxide) cannot provide enough current or they may struggle.
+ 
+\end_layout
+
+\begin_layout Standard
+Toledo placed a range of miniature batteries under a load that simulates
+ the behavior of a radio tag
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+.
+ The simulator is programmed for a repetition rate, say 1Hz, pulse duration,
+ say 8ms, and current, say 35mA.
+ The load sources the prescribed current for the prescribed pulse duration
+ repeatedly.
+ The battery voltage is sampled both during pulses and between pulses.
+ Testing continues until the battery voltage under load drops below a certain
+ value, say 1V; this value is often lower than the 1.8V threshold of actual
+ tags, to show what happens as the battery empties.
+ 
+\end_layout
+
+\begin_layout Standard
+This testing has revealed that silver-oxide batteries, the smallest available
+ for tags, cannot supply enough current.
+ When the battery is connected to the tag in parallel with a large capacitor
+ (the paper used 1000
+\begin_inset Formula $\mu$
+\end_inset
+
+F), the load was able to source the required current; the current during
+ the pulse was provided by the capacitor, which was recharged by the batteries
+ before the next pulse.
+ Reservoir capacitors have been used in a number of recent tag designs.
+ For example, Deng et al.
+\begin_inset space ~
+\end_inset
+
+used one in an acoustic ultrasound tag; they write 
+\begin_inset Quotes eld
+\end_inset
+
+a bulk capacitor smooths the large current pulse that occurs during transmission
+ to prevent damage to the battery
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "AcousticTransForSalmon2015"
+literal "false"
+
+\end_inset
+
+.
+ They do not explain what damage would occur without this capacitor.
+ Dressler et al.
+\begin_inset space ~
+\end_inset
+
+describe a lightweight wildlife tag that uses a capacitor 
+\begin_inset Quotes eld
+\end_inset
+
+to provide peak operating current for the system
+\begin_inset Quotes erd
+\end_inset
+
+ because the primary Lithium coin cell can only deliver about 0.5
+\begin_inset space ~
+\end_inset
+
+mA, not enough to power the tag when the radio is active
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BatsInTheWild2016"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This laboratory characterization of batteries by Toledo yielded a number
+ of other conclusions
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+, some that held up in the field and some that did not.
+ The data showed that a pair of zinc air batteries could easily power tags,
+ at least if the tag is not submerged in water; in the field, these batteries
+ proved unreliable and users do not use them.
+ The data also showed that the reservoir capacitor can extend the operational
+ life span of tags powered by batteries that do not absolutely need the
+ capacitor, such as Lithium CR1632 cells.
+ Finally, the data showed some voltage drops that were not explored fully
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Figure~5"
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+; these were not fully explored.
+ Similar voltage drops in other experiments not presented in the paper were
+ thought to be the result of defective batteries.
+\end_layout
+
+\begin_layout Standard
+When a reservoir capacitor connected in parallel with battery, the voltage
+ at the battery-capacitor node can drop during a pulse.
+ The voltage drops if the internal resistance of the battery allows the
+ capacitor to become partially discharged
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+show a simulation with no limiter
+\end_layout
+
+\end_inset
+
+.
+ When the voltage in that node is lower than the battery's voltage at rest,
+ the battery sees a very low impedance load.
+ Based on some unreported and incomplete testing, Toledo became concerned
+ that this might cause damage to silver oxide batteries; to prevent that,
+ he included a current-limiting capacitor between the silver-oxide cells
+ and the reservoir capacitor in the tags he designed since 2015.
+ He instructed users to connect silver-oxide batteries to the tag through
+ that resistor, after the tag has been 
+\begin_inset Quotes eld
+\end_inset
+
+jump started
+\begin_inset Quotes erd
+\end_inset
+
+ by connecting a low-internal resistance power source directly to the capacitor
+ (e.g., a pair of AA alkaline cells); he informed users that Lithium coin
+ cells can be connected in parallel with the capacitor.
+\end_layout
+
+\begin_layout Standard
+It appears that other researchers were also concerned about the effect of
+ the low impedance of the capacitor.
+ For example, Dressler et al.
+\begin_inset space ~
+\end_inset
+
+present a block diagram of their tag, showing that the battery is connected
+ to the capacitor through a current-limiting resistor
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BatsInTheWild2016"
+literal "false"
+
+\end_inset
+
+.
+ They do not discuss or explain the function of this resistor.
+\end_layout
+
+\begin_layout Standard
+Obviously, the chemistry literature on the characteristics of batteries
+ is vast, but is difficult in general for circuit and system designers to
+ understand.
+ Martin provides a good overview of battery characteristics for this audience
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Appendix C"
+key "MartinPhD1999"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The mismatch between available batteries and the requirements of wildlife
+ tags can also be addressed by designing better-matched batteries.
+ Chen et al.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "JSATSBattery2014"
+literal "false"
+
+\end_inset
+
+ describe such a project.
+ The battery that they designed for ultrasonic fish tags can probably be
+ successfully used on radio tags, but it is not available commercially,
+ even though the design has been licensed to a company
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Zhiqun (Daniel) Deng, personal communication.
+\end_layout
+
+\end_inset
+
+; apparently, the company does not judge the market for the battery to be
+ currently large enough.
+\end_layout
+
+\begin_layout Section
+Characterization System Design
+\end_layout
+
+\begin_layout Subsection
+Platform
+\end_layout
+
+\begin_layout Subsection
+Hardware Design
+\end_layout
+
+\begin_layout Subsection
+Software and Protocol Design
+\end_layout
+
+\begin_layout Section
+Experimental Results
+\end_layout
+
+\begin_layout Standard
+A miniature 330
+\begin_inset space ~
+\end_inset
+
+uF tantalum capacitor, F950J337KBAAQ2
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "TantalumF95"
+literal "false"
+
+\end_inset
+
+, that is used in most of the ATLAS and Vildehaye tags produced so far (see,
+ e.g.,
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vildehaye-wp"
+literal "false"
+
+\end_inset
+
+).
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Properties: 3.5 by 2.8 by 1.8 mm; 6.3V leakage current of 20.8uA at 20C, temperature
+ dependent, at most 10 more at 85C, ESR of 0.6Ohm at 100kHz
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A miniature 330uF (nominal) ceramic capacitor, JMK325ABJ337MM-P
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ceramic330uF"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+3.2 by 2.5 by 2.5mm; 6.3V; ~220uF at DC and frequencies below 100kHz; Strong
+ reduction in capacitance due to DC bias (~-40% at 3V); extremely low ESR,
+ 1mOhm at 100kHz, about 10mOhm at 1kHz.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Implications on Tag Design
+\end_layout
+
+\begin_layout Section
+Conclusions
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "battery"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
