@@ -9,7 +9,6 @@ void real_tag_setup(vector* v) {
     real_pulse_samples = v;
 }
 
-
 float voltage_in_pulse = 0; 
 float current_in_pulse = 0;
 float voltage_not_in_pulse = 0; 
@@ -22,8 +21,16 @@ bool too_long_pulse = false;
 int long_pulse_seconds = 0;
 unsigned long last_samples_offset = 0;
 
+enum PulseReason {
+  NO_PULSE,
+  CURRENT_PEAK,
+  VOLTAGE_FALL
+};
+bool pulse_recognized_reason = NO_PULSE;
+
 const long NUM_OF_RELEVANT_SAMPLE_LIMIT = 4;
 const int TOO_LONG_PULSE_LIMIT_MS = 30;
+const float CAPACITOR_VOLTAGE_LIMIT = 0.1;
 
 void real_tag_loop() {
   unsigned long currentMillis = millis();
@@ -31,18 +38,26 @@ void real_tag_loop() {
   float current_amper = getVoltage(TAG_LOAD_CURRENT); //Current
   
   if (in_pulse) { 
-    if (current_amper < 0.05){
-      num_of_relevant_samples++;
-    }
-     else
-      num_of_relevant_samples = 0;
-  }
-  else {
-    last_samples_add(current_voltage, current_amper, micros() - start_of_period_micros);
-    if (current_amper >= 0.06) {
+    if ((pulse_recognized_reason == VOLTAGE_FALL && !vector_is_empty(real_pulse_samples) && vector_get_last_sample(real_pulse_samples)->voltage < current_voltage) ||
+        (pulse_recognized_reason == CURRENT_PEAK && current_amper < 0.05)){
       num_of_relevant_samples++;
     }
      else {
+      num_of_relevant_samples = 0;
+     }
+  }
+  else {
+    last_samples_add(current_voltage, current_amper, micros() - start_of_period_micros);
+    if (!last_samples_is_empty() && last_samples_get_first_voltage() - current_voltage > CAPACITOR_VOLTAGE_LIMIT ) {
+      num_of_relevant_samples = NUM_OF_RELEVANT_SAMPLE_LIMIT; //Declare a pulse
+      pulse_recognized_reason = VOLTAGE_FALL;
+    }
+    else if (current_amper >= 0.06) {
+      num_of_relevant_samples++;
+      pulse_recognized_reason = CURRENT_PEAK;
+    }
+     else {
+      pulse_recognized_reason = NO_PULSE;
       num_of_relevant_samples = 0;
      }
   }
@@ -63,6 +78,7 @@ void real_tag_loop() {
 
       voltage_not_in_pulse = 0;
       vector_reset(real_pulse_samples);
+      pulse_recognized_reason = NO_PULSE;
     }
     else {
       last_samples_offset = last_sample_get_micros_offset();

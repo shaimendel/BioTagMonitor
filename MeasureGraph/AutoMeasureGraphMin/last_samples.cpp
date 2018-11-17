@@ -40,3 +40,11 @@ void last_samples_reset() {
   first = -1;
   last = -1;
 }
+
+bool last_samples_is_empty() {
+  return (first == -1) && (last == -1);
+}
+
+float last_samples_get_first_voltage() {
+  return last_samples[first].voltage;
+}

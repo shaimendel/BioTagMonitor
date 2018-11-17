@@ -103,6 +103,14 @@ void vector_serialize(vector* v) {
   }
 }
 
+bool vector_is_empty(vector* v) {
+  return v->count == 0;
+}
+
+pulseData* vector_get_last_sample(vector* v) {
+  return vector_get(v, v->count - 1);
+}
+
 //int main(void)
 //{
 //  vector v;

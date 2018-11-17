@@ -4,6 +4,7 @@ const int SIMULATED_LOAD_CURRENT = PA1;
 const int TAG_LOAD_CURRENT = PA1;
 const int analogPins[2] = { SIMULATED_LOAD_CURRENT, BATTERY_VOLTAGE, TAG_LOAD_CURRENT };
 const int DAC_PIN = PA4;
+const int CAPACITOR_BATTERY_VOLTAGE = PA6;
 const int analogCount = sizeof(analogPins)/sizeof(analogPins[0]);
 
 void inline specific_board_init() {
@@ -16,4 +17,3 @@ void inline specific_board_init() {
 int inline analogReadFast(byte ADCpin) {
   return analogRead(ADCpin);
 }
-
