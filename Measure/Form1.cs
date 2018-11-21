@@ -16,11 +16,13 @@ namespace Measure
     public partial class Form1 : Form
     {
         const string VOLTAGE_LOG_DIR = "Voltage";
+        const double BAD_PULSES_LOWER_VOLTAGE_THRESHOLD = 2.3;
         private SerialPort port;
         private StreamWriter voltageLogFile = null;
         private string pulseLengthData;
         private string dacOutputData;
         private string pulseIntervalData;
+        private bool shouldSkipBadPulses = false;
         private Task simulationTask = null;
         private bool isClosing = false;
         private bool isRealTag = true;
@@ -52,6 +54,7 @@ namespace Measure
             pulseIntervalData = pulseIntervalTextBox.Text;
             dacOutputData = dacTextBox.Text;
             pulseLengthData = pulseTextBox.Text;
+            shouldSkipBadPulses = skipBadPulsesCheckBox.Checked;
         }
 
         private void goButton_Click(object sender, EventArgs e)
@@ -113,6 +116,9 @@ namespace Measure
                     string d = Volatile.Read(ref dacOutputData);
                     port.WriteLine(d);
                     port.WriteLine(Volatile.Read(ref pulseLengthData));
+
+                    double bad_pulses_threshold = Volatile.Read(ref shouldSkipBadPulses) ? BAD_PULSES_LOWER_VOLTAGE_THRESHOLD : 0.0;
+                    port.WriteLine(bad_pulses_threshold.ToString());
                     Thread.Sleep(int.Parse(Volatile.Read(ref pulseIntervalData)));
                 }
             });

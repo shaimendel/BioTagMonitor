@@ -10,6 +10,7 @@ void simulated_tag_setup(vector* v) {
 
 volatile long dac_voltage = 20;
 volatile long pulse_length = 8;
+volatile float lower_voltage_threshold = 5;
 
 void simulated_tag_loop() {
   float voltage_not_in_pulse = 0;
@@ -28,6 +29,24 @@ void simulated_tag_loop() {
     
   String pulse_length_string = Serial.readStringUntil('\n');
   pulse_length = atoi(pulse_length_string.c_str());
+
+  String lower_voltage_threshold_string = Serial.readStringUntil('\n');
+  lower_voltage_threshold = atof(lower_voltage_threshold_string.c_str());
+
+  if (voltage_not_in_pulse < lower_voltage_threshold) {
+    delay(pulse_length);
+    Serial.print(0.0, 5);
+    Serial.print(",");
+    Serial.print(0.0, 5);
+    Serial.print(",");
+    Serial.print(pulse_length);
+    Serial.print(",");
+    Serial.print(voltage_not_in_pulse, 5);
+    Serial.print(",");
+  
+    Serial.println();
+    return;
+  }
   
   setDigitalVoltage(SHUTDOWN_PIN, LOW);
   setVoltageRaw(DAC_PIN, dac_voltage);

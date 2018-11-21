@@ -40,6 +40,7 @@
             this.goButton = new System.Windows.Forms.Button();
             this.comPortComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.skipBadPulsesCheckBox = new System.Windows.Forms.CheckBox();
             this.simulationPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,6 +58,7 @@
             // simulationPanel
             // 
             this.simulationPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.simulationPanel.Controls.Add(this.skipBadPulsesCheckBox);
             this.simulationPanel.Controls.Add(this.updateButton);
             this.simulationPanel.Controls.Add(this.label2);
             this.simulationPanel.Controls.Add(this.label4);
@@ -67,16 +69,16 @@
             this.simulationPanel.Enabled = false;
             this.simulationPanel.Location = new System.Drawing.Point(12, 22);
             this.simulationPanel.Name = "simulationPanel";
-            this.simulationPanel.Size = new System.Drawing.Size(415, 127);
+            this.simulationPanel.Size = new System.Drawing.Size(415, 153);
             this.simulationPanel.TabIndex = 20;
             // 
             // updateButton
             // 
             this.updateButton.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.updateButton.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.updateButton.Location = new System.Drawing.Point(246, 11);
+            this.updateButton.Location = new System.Drawing.Point(246, 9);
             this.updateButton.Name = "updateButton";
-            this.updateButton.Size = new System.Drawing.Size(153, 99);
+            this.updateButton.Size = new System.Drawing.Size(155, 139);
             this.updateButton.TabIndex = 15;
             this.updateButton.Text = "Update";
             this.updateButton.UseVisualStyleBackColor = false;
@@ -86,7 +88,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 14);
+            this.label2.Location = new System.Drawing.Point(11, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(123, 17);
             this.label2.TabIndex = 9;
@@ -96,7 +98,7 @@
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 89);
+            this.label4.Location = new System.Drawing.Point(9, 84);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(125, 17);
             this.label4.TabIndex = 13;
@@ -105,7 +107,7 @@
             // pulseTextBox
             // 
             this.pulseTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pulseTextBox.Location = new System.Drawing.Point(140, 11);
+            this.pulseTextBox.Location = new System.Drawing.Point(140, 6);
             this.pulseTextBox.Name = "pulseTextBox";
             this.pulseTextBox.Size = new System.Drawing.Size(100, 22);
             this.pulseTextBox.TabIndex = 8;
@@ -115,7 +117,7 @@
             // pulseIntervalTextBox
             // 
             this.pulseIntervalTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pulseIntervalTextBox.Location = new System.Drawing.Point(140, 88);
+            this.pulseIntervalTextBox.Location = new System.Drawing.Point(140, 83);
             this.pulseIntervalTextBox.Name = "pulseIntervalTextBox";
             this.pulseIntervalTextBox.Size = new System.Drawing.Size(100, 22);
             this.pulseIntervalTextBox.TabIndex = 12;
@@ -125,7 +127,7 @@
             // dacTextBox
             // 
             this.dacTextBox.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.dacTextBox.Location = new System.Drawing.Point(140, 49);
+            this.dacTextBox.Location = new System.Drawing.Point(140, 44);
             this.dacTextBox.Name = "dacTextBox";
             this.dacTextBox.Size = new System.Drawing.Size(100, 22);
             this.dacTextBox.TabIndex = 10;
@@ -136,7 +138,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(11, 52);
+            this.label3.Location = new System.Drawing.Point(11, 47);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(83, 17);
             this.label3.TabIndex = 11;
@@ -170,6 +172,16 @@
             this.label1.Size = new System.Drawing.Size(66, 17);
             this.label1.TabIndex = 16;
             this.label1.Text = "Com Port";
+            // 
+            // skipBadPulsesCheckBox
+            // 
+            this.skipBadPulsesCheckBox.AutoSize = true;
+            this.skipBadPulsesCheckBox.Location = new System.Drawing.Point(12, 127);
+            this.skipBadPulsesCheckBox.Name = "skipBadPulsesCheckBox";
+            this.skipBadPulsesCheckBox.Size = new System.Drawing.Size(132, 21);
+            this.skipBadPulsesCheckBox.TabIndex = 17;
+            this.skipBadPulsesCheckBox.Text = "Skip Bad Pulses";
+            this.skipBadPulsesCheckBox.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -205,6 +217,7 @@
         private System.Windows.Forms.Button goButton;
         private System.Windows.Forms.ComboBox comPortComboBox;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox skipBadPulsesCheckBox;
     }
 }
 

@@ -25,6 +25,9 @@ The project contains:
 
 ### Measure
 The C# project that operates the arduino, both for tag simulation and also with real tags.
+In order to compile Measure.csproj to mono: 
+- cd to Measure.csproj folder
+- xbuild /p:TargetFrameworkVersion="v4.5"
 
 #### AutoMeasureGraphMin
 Arduino software to measure bio tags.

@@ -42,6 +42,7 @@
             this.simulationPanel = new System.Windows.Forms.Panel();
             this.updateButton = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.skipBadPulsesCheckBox = new System.Windows.Forms.CheckBox();
             this.simulationPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -67,9 +68,9 @@
             this.goButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.goButton.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.goButton.Location = new System.Drawing.Point(1144, 19);
+            this.goButton.Location = new System.Drawing.Point(1209, 19);
             this.goButton.Name = "goButton";
-            this.goButton.Size = new System.Drawing.Size(178, 32);
+            this.goButton.Size = new System.Drawing.Size(113, 32);
             this.goButton.TabIndex = 5;
             this.goButton.Text = "Go";
             this.goButton.UseVisualStyleBackColor = false;
@@ -100,7 +101,7 @@
             // 
             // pulseTextBox
             // 
-            this.pulseTextBox.Location = new System.Drawing.Point(136, 12);
+            this.pulseTextBox.Location = new System.Drawing.Point(129, 12);
             this.pulseTextBox.Name = "pulseTextBox";
             this.pulseTextBox.Size = new System.Drawing.Size(100, 22);
             this.pulseTextBox.TabIndex = 8;
@@ -110,7 +111,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 14);
+            this.label2.Location = new System.Drawing.Point(4, 14);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(123, 17);
             this.label2.TabIndex = 9;
@@ -119,7 +120,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(253, 14);
+            this.label3.Location = new System.Drawing.Point(234, 14);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(83, 17);
             this.label3.TabIndex = 11;
@@ -127,7 +128,7 @@
             // 
             // dacTextBox
             // 
-            this.dacTextBox.Location = new System.Drawing.Point(342, 12);
+            this.dacTextBox.Location = new System.Drawing.Point(323, 12);
             this.dacTextBox.Name = "dacTextBox";
             this.dacTextBox.Size = new System.Drawing.Size(100, 22);
             this.dacTextBox.TabIndex = 10;
@@ -137,7 +138,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(456, 14);
+            this.label4.Location = new System.Drawing.Point(425, 14);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(125, 17);
             this.label4.TabIndex = 13;
@@ -145,7 +146,7 @@
             // 
             // pulseIntervalTextBox
             // 
-            this.pulseIntervalTextBox.Location = new System.Drawing.Point(587, 13);
+            this.pulseIntervalTextBox.Location = new System.Drawing.Point(556, 13);
             this.pulseIntervalTextBox.Name = "pulseIntervalTextBox";
             this.pulseIntervalTextBox.Size = new System.Drawing.Size(100, 22);
             this.pulseIntervalTextBox.TabIndex = 12;
@@ -155,6 +156,7 @@
             // simulationPanel
             // 
             this.simulationPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.simulationPanel.Controls.Add(this.skipBadPulsesCheckBox);
             this.simulationPanel.Controls.Add(this.updateButton);
             this.simulationPanel.Controls.Add(this.label2);
             this.simulationPanel.Controls.Add(this.label4);
@@ -165,7 +167,7 @@
             this.simulationPanel.Enabled = false;
             this.simulationPanel.Location = new System.Drawing.Point(305, 12);
             this.simulationPanel.Name = "simulationPanel";
-            this.simulationPanel.Size = new System.Drawing.Size(833, 46);
+            this.simulationPanel.Size = new System.Drawing.Size(898, 46);
             this.simulationPanel.TabIndex = 14;
             // 
             // updateButton
@@ -173,9 +175,9 @@
             this.updateButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.updateButton.BackColor = System.Drawing.Color.DarkSeaGreen;
-            this.updateButton.Location = new System.Drawing.Point(696, 5);
+            this.updateButton.Location = new System.Drawing.Point(801, 5);
             this.updateButton.Name = "updateButton";
-            this.updateButton.Size = new System.Drawing.Size(133, 32);
+            this.updateButton.Size = new System.Drawing.Size(93, 32);
             this.updateButton.TabIndex = 15;
             this.updateButton.Text = "Update";
             this.updateButton.UseVisualStyleBackColor = false;
@@ -191,6 +193,16 @@
             this.checkBox1.Text = "Simulation";
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
+            // skipBadPulsesCheckBox
+            // 
+            this.skipBadPulsesCheckBox.AutoSize = true;
+            this.skipBadPulsesCheckBox.Location = new System.Drawing.Point(666, 12);
+            this.skipBadPulsesCheckBox.Name = "skipBadPulsesCheckBox";
+            this.skipBadPulsesCheckBox.Size = new System.Drawing.Size(132, 21);
+            this.skipBadPulsesCheckBox.TabIndex = 16;
+            this.skipBadPulsesCheckBox.Text = "Skip Bad Pulses";
+            this.skipBadPulsesCheckBox.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -230,6 +242,7 @@
         private System.Windows.Forms.Panel simulationPanel;
         private System.Windows.Forms.Button updateButton;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox skipBadPulsesCheckBox;
     }
 }
 
