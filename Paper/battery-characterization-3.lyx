@@ -1,0 +1,4173 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{url}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "md-charter" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 12
+\spacing onehalf
+\use_hyperref false
+\papersize a4paper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\headheight 1cm
+\headsep 0cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+A System to Characterize Battery Behavior
+\begin_inset Newline newline
+\end_inset
+
+in Miniature Wildlife Tags
+\begin_inset Newline newline
+\end_inset
+
+Reveals Correctable Reliability Weaknesses
+\end_layout
+
+\begin_layout Author
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Sivan Toledo and Shai Mendel
+\begin_inset Newline newline
+\end_inset
+
+Blavatnik School of Computer Science, Tel-Aviv University
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+We describe a system that we have designed, built, and used to investigate
+ the behavior of small batteries that power miniature wildlife tracking
+ tags.
+ The system enables simple and low-cost long-term (days to weeks) monitoring
+ of tags powered by such batteries, as well as testing batteries under a
+ simulated tag load.
+ Using this system, we have found a major cause of failures in tags, an
+ effect called 
+\emph on
+concentration polarization
+\emph default
+, which causes a transient increase in the internal resistance of the battery.
+ The paper describes the rationale and design of the system, the failures
+ that we have discovered using it, and several mechanisms that we have assessed
+ to mitigate this effect as well as the naturally-high internal resistance
+ of miniature batteries.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+First paper is at D:
+\backslash
+Dropbox
+\backslash
+Projects
+\backslash
+ti-ccs5-projects
+\backslash
+matlab
+\backslash
+battery
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Powering miniature wildlife tags remains a significant challenge, even after
+ more than a half-century of experience with such tags.
+ There are several reasons that this problem has not been resolved.
+ First, modern wildlife tags are based on CMOS digital electronic that require
+ at least 1.8V, whereas some cell chemistries only deliver around 1.5V, requiring
+ a pair of batteries (silver oxide and zinc air) or a DC-DC boost converter.
+ Second, many miniature batteries cannot deliver the peak current that transmitt
+ing tags require, often around 20mA; this is true both for radio transmitters
+ and for ultrasonic transmitters, which are used to track fish.
+ Third, the market for suitable batteries is small and fragmented, limiting
+ commercial interest in the development of batteries that better match the
+ requirements.
+ Fourth, the processes inside batteries are complex and can lead to tag
+ failure even when if the voltage and peak current requirements are met.
+ 
+\end_layout
+
+\begin_layout Standard
+In particular, users of tags designed by one of the authors complained that
+ a non-trivial number of tags have failed, with a variety of batteries,
+ including both miniature batteries and larger ones (e.g., AA size lithium
+ cells), in spite of a careful study to characterize batteries that should
+ work well with the tags
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+, and in spite of an on-tag mechanism designed to mitigate such problems
+ (a reservoir or bulk capacitor
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "TagsEDERC2014,ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Trying to replicate and study these failures in the lab proved difficult.
+ In some cases, tag failure quickly depleted one battery but when we attached
+ the tag to another battery of the same type, it performed flawlessly.
+ In other cases, we were able to replicate failures, but capturing all the
+ relevant voltages and currents at the time of failure on an oscilloscope
+ proved difficult.
+\end_layout
+
+\begin_layout Standard
+These user-reported failures and the difficulty of diagnosing them motivated
+ the research reported here.
+ We decided to build a specialized but easy-to-replicate test instrument
+ that would allow us to address the following problems
+\end_layout
+
+\begin_layout Itemize
+The instrument should allow us to capture all the relevant current and voltage
+ measurements around to the time of failure, both before and after the failure.
+\end_layout
+
+\begin_layout Itemize
+The instrument should allow us to perform large-scale testing of batteries,
+ both when they power actual tags and when supplying simulated loads.
+\end_layout
+
+\begin_layout Standard
+We also felt that an easy-to-replicate test instrument could also achieve
+ additional goals, which are less critical but still useful:
+\end_layout
+
+\begin_layout Itemize
+Users (biologists and their technicians) should be able to use it to perform
+ the same types of analyses.
+ 
+\end_layout
+
+\begin_layout Itemize
+Users should be able to use the instrument to measure the life spans of
+ tags with different configurations (transmission rates and power, etc)
+ and different batteries.
+\end_layout
+
+\begin_layout Itemize
+Users should be able to monitor the current consumption of tags using the
+ instrument.
+ This monitoring can be done using an oscilloscope and a current-sensing
+ resistor, but not all tag users have an oscilloscope, setting up the scope
+ to monitor current consumption is non-trivial (not difficult to frequent
+ users of oscilloscopes, but non trivial for casual users).
+ The instrument is also considerably less expensive than an oscilloscope.
+ 
+\end_layout
+
+\begin_layout Standard
+The instrument and the software system that drives it have indeed enabled
+ us to discover an important cause of failures that we were not aware of.
+ To the best of our knowledge, has not been described in the literature
+ on the design of wildlife tracking and sensing tags.
+ The system also allowed us to assess mitigation mechanisms intended to
+ eliminate this cause of failure.
+ We found that one mechanism mitigates but does not completely eliminate
+ the problem; another appears to address it fully.
+ Briefly, we discovered that miniature lithium coin cells sometimes suffer
+ from 
+\emph on
+concentration polarization
+\emph default
+, an effect that raises the internal resistance sigificantly but temporarily.
+ We also discovered that limiting from below the impedance that the battery
+ sees (to a value in the single kilo-Ohms range) reduces the frequency of
+ this effect but does not eliminate it completely; by skipping activity
+ period while the internal resistance is high, tags should be able to survive
+ these transients, allowing the battery to recover (through diffusion of
+ the reactants).
+ 
+\end_layout
+
+\begin_layout Standard
+Two other contribution of the paper are an analytic technique to size both
+ the reservoir capacitor and the current-limiting resistor, and a circuit
+ to disconnect the reservoir capacitor when the tag is in so-called 
+\emph on
+ship mode
+\emph default
+ (as inactive as possible, to extend shelf life) and to reconnect it safely
+ when the tag is pressed into service.
+\end_layout
+
+\begin_layout Standard
+The rest of this paper is organized as follows.
+ Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Background"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ provides background on this problem.
+ Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Characterization-System-Design"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ describes the characterization system that we designed.
+ Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Limiting-Peak-Battery"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows how to limit the impedance that the battery sees and how to size
+ the reservoir capacitor and the current-limiting resistor.
+ Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Preventing-Reservoir-Capacitor-Leakage"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ describes a technique to safely connect and disconnect the reservoir capacitor.
+ Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:firmware-prevention"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ describes the results of experiments in which the tag skips activity pulses
+ when the battery's impedance might be too low, risking a reset or failure.
+ We present our conclusions from this research in Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Conclusions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Background"
+
+\end_inset
+
+Background
+\end_layout
+
+\begin_layout Standard
+Almost all wildlife tags today use a microcontroller; many also contain
+ a radio transmitter or transceiver or an ultrasonic transducer, sometimes
+ sensors, and sometimes an additional memory chip.
+ Early radio tag designs
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "CochranLord1963"
+literal "false"
+
+\end_inset
+
+ were completely analog and are easier to power, but are outside the scope
+ of this paper; similar designs are still used quite widely
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "miniature-vhf"
+literal "false"
+
+\end_inset
+
+.
+ Integrated circuits that are appropriate for wildlife tags require at least
+ 1.8V (often 1.8 to 3.6 or 3.8V).
+ Transmitting a low-power radio signal from an integrated transceiver usually
+ requires 10mA or more; powering a GPS receiver requires even more, often
+ around 30mA.
+ Relatively large Lithium primary batteries can provide the required voltage
+ and current, but small Lithium coin cells and other miniature batteries
+ (e.g., silver oxide) cannot provide enough current or they may struggle.
+ 
+\end_layout
+
+\begin_layout Standard
+Toledo placed a range of miniature batteries under a load that simulates
+ the behavior of a radio tag
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+.
+ The simulator is programmed for a repetition rate, say 1Hz, pulse duration,
+ say 8ms, and current, say 35mA.
+ The load sources the prescribed current for the prescribed pulse duration
+ repeatedly.
+ The battery voltage is sampled both during pulses and between pulses.
+ Testing continues until the battery voltage under load drops below a certain
+ value, say 1V; this value is often lower than the 1.8V threshold of actual
+ tags, to show what happens as the battery empties.
+ 
+\end_layout
+
+\begin_layout Standard
+This testing has revealed that silver-oxide batteries, the smallest available
+ for tags, cannot supply enough current.
+ When the battery is connected to the tag in parallel with a large capacitor
+ (the paper used 1000
+\begin_inset Formula $\mu$
+\end_inset
+
+F), the load was able to source the required current; the current during
+ the pulse was provided by the capacitor, which was recharged by the batteries
+ before the next pulse.
+ Reservoir capacitors have been used in a number of recent tag designs.
+ For example, Deng et al.
+\begin_inset space ~
+\end_inset
+
+used one in an acoustic ultrasound tag; they write 
+\begin_inset Quotes eld
+\end_inset
+
+a bulk capacitor smooths the large current pulse that occurs during transmission
+ to prevent damage to the battery
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "AcousticTransForSalmon2015"
+literal "false"
+
+\end_inset
+
+.
+ They do not explain what damage would occur without this capacitor.
+ Dressler et al.
+\begin_inset space ~
+\end_inset
+
+describe a lightweight wildlife tag that uses a capacitor 
+\begin_inset Quotes eld
+\end_inset
+
+to provide peak operating current for the system
+\begin_inset Quotes erd
+\end_inset
+
+ because the primary Lithium coin cell can only deliver about 0.5
+\begin_inset space ~
+\end_inset
+
+mA, not enough to power the tag when the radio is active
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BatsInTheWild2016"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This laboratory characterization of batteries by Toledo yielded a number
+ of other conclusions
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+, some that held up in the field and some that did not.
+ The data showed that a pair of zinc air batteries could easily power tags,
+ at least if the tag is not submerged in water; in the field, these batteries
+ proved unreliable and users do not use them.
+ The data also showed that the reservoir capacitor can extend the operational
+ life span of tags powered by batteries that do not absolutely need the
+ capacitor, such as Lithium CR1632 cells.
+ Finally, the data showed some voltage drops that were not explored fully
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Figure~5"
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+; these were not fully explored.
+ Similar voltage drops in other experiments not presented in the paper were
+ thought to be the result of defective batteries.
+\end_layout
+
+\begin_layout Standard
+When a reservoir capacitor connected in parallel with battery, the voltage
+ at the battery-capacitor node can drop during a pulse.
+ The voltage drops if the internal resistance of the battery allows the
+ capacitor to become partially discharged.
+ When the voltage in that node is lower than the battery's voltage at rest,
+ the battery sees a very low impedance load.
+ Based on some unreported and incomplete testing, Toledo became concerned
+ that this might cause damage to silver oxide batteries; to prevent that,
+ he included a current-limiting capacitor between the silver-oxide cells
+ and the reservoir capacitor in the tags he designed since 2015.
+ He instructed users to connect silver-oxide batteries to the tag through
+ that resistor, after the tag has been 
+\begin_inset Quotes eld
+\end_inset
+
+jump started
+\begin_inset Quotes erd
+\end_inset
+
+ by connecting a low-internal resistance power source directly to the capacitor
+ (e.g., a pair of AA alkaline cells); he informed users that Lithium coin
+ cells can be connected in parallel with the capacitor.
+\end_layout
+
+\begin_layout Standard
+It appears that other researchers were also concerned about the effect of
+ the low impedance of the capacitor.
+ For example, Dressler et al.
+\begin_inset space ~
+\end_inset
+
+present a block diagram of their tag, showing that the battery is connected
+ to the capacitor through a current-limiting resistor
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BatsInTheWild2016"
+literal "false"
+
+\end_inset
+
+.
+ They do not discuss or explain the function of this resistor.
+\end_layout
+
+\begin_layout Standard
+Obviously, the chemistry literature on the characteristics of batteries
+ is vast, but is difficult in general for circuit and system designers to
+ understand.
+ Martin provides a good overview of battery characteristics for this audience
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Appendix C"
+key "MartinPhD1999"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The mismatch between available batteries and the requirements of wildlife
+ tags can also be addressed by designing better-matched batteries.
+ Chen et al.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "JSATSBattery2014"
+literal "false"
+
+\end_inset
+
+ describe such a project.
+ The battery that they designed for ultrasonic fish tags can probably be
+ successfully used on radio tags, but it is not available commercially,
+ even though the design has been licensed to a company
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Zhiqun (Daniel) Deng, personal communication.
+\end_layout
+
+\end_inset
+
+; apparently, the company does not judge the market for the battery to be
+ currently large enough.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Characterization-System-Design"
+
+\end_inset
+
+Characterization System Design
+\end_layout
+
+\begin_layout Standard
+To achieve our goals, we designed and built a system to characterize the
+ behavior of miniature batteries under a real or simulated load that is
+ typical for wildlife tracking tags.
+ The system consists of hardware (an analog circuit interfaced to a microcontrol
+ler), firmware, and host software that drives the testing and collects the
+ results.
+ The system is an enhancement of a load simulation system built earlier
+ by one of the authors to address some of our goals
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename 2018-11-28 09.57.43.jpg
+	lyxscale 20
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename 2018-11-28 09.58.49.jpg
+	lyxscale 20
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:tester-image"
+
+\end_inset
+
+The battery characterization hardware.
+ The image on the left shows the add-on circuit that we designed and built.
+ The image on the right shows the same unit, but stacked below an Adafruit
+ Feather M4 Express microcontroller board.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Platform
+\end_layout
+
+\begin_layout Standard
+We chose to build the hardware around a microcontroller board with a fairly
+ fast ARM processor and with a small form factor (24 by 51mm).
+ The board is the 
+\emph on
+Adafruit Feather M4 Express
+\emph default
+ board, with an 120MHz Cortex M4 microcontroller (ATSAMD51J19) with and
+ 512KB Flash and 192KB RAM.
+ The feather series consists of boards with several different microcontrollers,
+ some with WiFi or other radios and with extension connectors that have
+ the same or almost the same layout in all the boards.
+ Therefore, extension boards like the one that carries our analog circuit
+ can be compatible with multiple feather boards.
+ Ours is compatible at least with the Express M4 board and with the WICED
+ WiFi board, costing $23 and $35, respectively.
+\end_layout
+
+\begin_layout Standard
+These feather boards support the Arduino firmware environment, which is
+ an easy-to-use C++ programming environment that supports numerous microcontroll
+er boards.
+ The Express M4 board also supports CircuitPython, a more high-level firmware
+ environment.
+ We used the Arduino environment.
+ We selected it for performance (it produces native C/C++ binaries), because
+ it allows our firmware to run on many other microcontroller boards, and
+ because it allows others to earily modify and enhance our code (it is more
+ highly standardized and widely used than any other firmware environment).
+\end_layout
+
+\begin_layout Standard
+The small form factor of the feather boards makes the hardware unit compact
+ and reduces the cost of the analog circuit board.
+ The size still allows for easy manual assembly of the custom analog board
+ (one of the authors manually soldered 11 of these boards in a few hours).
+ 
+\end_layout
+
+\begin_layout Subsection
+Hardware Design
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename tester-circuit.png
+	lyxscale 20
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:tester-circuit"
+
+\end_inset
+
+The circuit of the load simulator and battery tester.
+ Connectors JP1 and JP2 connect the circuit to microcontroller board from
+ the Adafruit feather series.
+ Connector JP3 is used to connect the battery under test and possibly a
+ tag.
+ Pin A0 is used to set the current that the simulator draws from the battery
+ in each pulse; it should be driven by a DAC.
+ Digital pin 5 controls the current sink; when low, the simulator draws
+ current from the battery, when it is high, the simulator draws no current
+ (but the tag might, if one is connected).
+ Pin A2 should be connected to an ADC; it monitors the current drawn by
+ the simulator.
+ Pin A3 monitors the battery voltage.
+ Pin A4 monitors the current drawn by the tag.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The analog part of our load tester and battery simulator is shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:tester-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The middle part featuring opamp IC1A is a programmable current sink that
+ is used as a load simulator.
+ It is almost identical to the load simulator described in
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ToledoIETWSS2015"
+literal "false"
+
+\end_inset
+
+, with the exception of C16.
+ In general, when Q2 is not conducting (pin 5 is low), the opamp and Q1
+ force current to flow through R5 such that the voltage drop on it is equal
+ to the voltage in the inverting pin of opamp IC1A, which is driven by a
+ digital-to-analog converter (DAC).
+\end_layout
+
+\begin_layout Standard
+The role of capacitor C16, which was missing the original load simulator,
+ is to enhance the Miller effect of MOSFET Q1, in order to slow down the
+ turn-on of the current sink.
+ Without it, the current drawn by the load starts with a high short (on
+ the order of a microsecond) spike that settles to the programmable level.
+ This spike, which does not occur under actual loads, can potentially stress
+ the battery.
+ The spike is part of the settling of the opamp circuit, in which the negative
+ feedback loop is open before the pulse (the gate of Q1 is grounded).
+\end_layout
+
+\begin_layout Standard
+Spice simulation indicates that without this Miller capacitor, a 35mA current-si
+nking pulse starts with a 270mA spike lasting 1.5
+\begin_inset Formula $\mu$
+\end_inset
+
+s.
+ With the 0.1
+\begin_inset Formula $\mu$
+\end_inset
+
+F capacitor, the spike reduces to 40mA.
+ Oscilloscope measurements verified these findings.
+ The details of the spike depend on the parameters of both the MOSFET and
+ the opamp; the simulation used the parts that we use in the actual circuit,
+ DMN1019 and LT1498.
+\end_layout
+
+\begin_layout Standard
+The circuit around IC1B is simply an 
+\begin_inset Formula $11\times$
+\end_inset
+
+ amplifier that amplifies the voltage developed across the current sensing
+ resistor R1.
+ The voltage drop across this resistor causes tags to fail while battery
+ voltage is still above the tag's threshold (around 1.8V), but only slightly
+ so, about 20mV above the threshold.
+\end_layout
+
+\begin_layout Standard
+We also simulated another version of the circuit, in which both sections
+ of the opamp formed a single feedback loop.
+ In that variant, the tag is connected in parallel with Q2 (to its drain
+ and source) and R1 is reduced to around 1
+\begin_inset space ~
+\end_inset
+
+Ohm or lower.
+ This required amplification of the voltage across R1.
+ The potential advantage of this configuration is that it enables the use
+ a single analog-to-digital (ADC) pin for both the load simulator and measuremen
+t of current drawn by actual tags.
+ However, this variant proved to be unstable in simulation mode.
+ Since most microcontrollers have multiple ADC pins, the disadvantage of
+ the two current-sensing outputs in the final design is negligible.
+\end_layout
+
+\begin_layout Standard
+The function of the shorted zero-Ohm resistors that connect the circuit
+ to the pins of the feather board was to allow patching the circuit, should
+ modifications prove necessary (the shorting trace can be cut and the PCB
+ pads for the SMD resistors can be used for patching wires).
+ In other words, these are PCB features designed to make a prototype flexible.
+ They have no function in the final design (and they proved unnecessary).
+ 
+\end_layout
+
+\begin_layout Subsection
+Firmware, Software and Protocol Design
+\end_layout
+
+\begin_layout Standard
+The system can be used in one of two modes.
+ In simulation mode, the experiment is driven by a host computer running
+ C-sharp software that drives the experiment and collects measurement data.
+ In observation mode, the system monitors the current consumption and battery
+ voltage of an actual tag.
+ In this mode, measurements are still transferred from the microcontroller
+ to the host for storage, but the host has no control over the schedule
+ of the experiment; the tag does.
+\end_layout
+
+\begin_layout Standard
+In simulation mode, the user configures the pulse-repetition rate, the pulse
+ duration, and the current to be drawn in each pulse.
+ Each current-sinking pulse is initiated by the host.
+ This ensures that if the host software stops or the host itself halts or
+ reboots, the experiment is suspended and the battery is not drained further,
+ until the experiment is restarted.
+ This is important since some of these experiments, especially with large
+ batteries, can last days or weeks.
+ In this mode, the firmware waits for a command from the host to start a
+ pulse.
+ During this wait, it monitors battery voltage and records the highest voltage
+ it has seen.
+ When a command arrives, the firmware sets the DAC output to the correct
+ level, starts the pulse by clearing pin
+\begin_inset space ~
+\end_inset
+
+5, and samples the battery voltage and the current drawn at a high rate.
+ The samples are time stamped.
+ At the end of the pulse, the firmware sends to the host the highest voltage
+ before the pulse (and resets this variable), the lowest voltage and highest
+ current during the pulse, and all the samples of current and voltage during
+ the pulse.
+ The firmware samples the ADC at about 12.5kHz (this is a limitation of the
+ Arduino library that drive the ADC; the microcontroller can sample at up
+ to 1000ks/s), giving about 50 current samples and 50 voltage samples for
+ an 8ms pulse.
+\end_layout
+
+\begin_layout Standard
+In this mode, host software stores all the data in a file and can display
+ both the overall graphs of extreme values in each pulse (highest voltage
+ before the pulse, lowest voltage and highest current during the pulse),
+ as well as the detailed measurements during a pulse that the user selects
+ on the screen (this visualization software is written in Python).
+ 
+\end_layout
+
+\begin_layout Standard
+In tag-testing mode, the firmware discovers the timing of current-drawing
+ pulses automatically using a set of rules.
+ The rule that indicates the beginning of a pulse requires 4 consecutive
+ current samples to exceed a threshold of about 5.4mA; the rule for terminating
+ a pulse is 4 samples below 4.5mA, to provide hysteresis.
+ These thresholds are constrained by the opamp errors (mainly offset voltage),
+ which are fairly high for the LT1498.
+ A precision opamp should allow using much lower thresholds.
+ At the end of each pulse, the firmware sends the same data as in simulation
+ mode: extreme values before and during the pulse, high-resolution measurements
+ during and just before the pulse.
+ The firmware uses a 15-slots cyclic buffer to store pre-pulse measurements.
+\end_layout
+
+\begin_layout Standard
+The tag-testing mode also implements facilities to record the current and
+ voltage behaviors when a tag behaves abnormally, which is usually caused
+ by some failure or fault.
+ In normal behavior, tags consume current in short pulses that last up to
+ 30ms or so (with a high consumption that is typically much shorter, around
+ 8ms, sometimes followed by lower consumption for some additional time,
+ to store sensor measurements or to perform other housekeeping activities).
+ When a tag fail, it can consume current continuously, which can drain the
+ battery.
+ When a pulse lasts longer than a threshold (30ms), the firmware moves to
+ slow-sampling mode, in which the tag reports every millisecond the maximal
+ current and minimal battery voltage consumed in the previous millisecond.
+ Host software records these values but can aggregate them if the failure
+ lasts longer than a few seconds.
+\end_layout
+
+\begin_layout Section
+Initial Experimental Results: The Effect of Reservoir Capacitors
+\end_layout
+
+\begin_layout Standard
+Our main finding is that small lithium coin batteries connected in parallel
+ with reservoir capacitors sometimes fail catastrophically under tag-like
+ loads.
+ We tested a range of different Renata lithium coin batteries under a periodic
+ constant current loads.
+ The load drew about 19mA from the battery for 8ms every second.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1620-nocap.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1620-nocap-zoom-255204.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1625-nocap"
+
+\end_inset
+
+Behavior of Renata CR1625 battery.
+ The apparent failure around second 1,250,000 was caused by a bad connection,
+ not intrinsic battery behavior.
+ The graph on the right shows the behavior during one pulse: while current
+ is drawn, the battery's internal resistance causes voltage to drop, here
+ by about 650mV, indicating an internal resistance of about 34 Ohms.
+ We can clearly see the internal resistance rising as the battery drains.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1625-nocap"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the behavior of a CR1625 battery under this load.
+ Due to its somewhat small size, the battery struggles to deliver 19mA;
+ after a short while, voltage sags during the pulse by about 0.65, and the
+ sagging gets worse and worse as the battery drains.
+ Still, voltage stays above 1.8V for at least 1.2Ms.
+ A tag with similar current consumption can be easily powered by this battery.
+ However, the gradual increase in internal resistance will cause the voltage
+ to sag below 1.8V when there is still a significant amount of energy in
+ the battery.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1225-nocap.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1225-nocap-zoom-483210.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1225-nocap"
+
+\end_inset
+
+Behavior of Renata CR1225 battery under the same load.
+ The internal resistance fluctuates; at best, the voltage under load is
+ 2V (internal resistance of about 47 Ohms), but it is less even than in
+ Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1625-nocap"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and dips close to or below 1.8V even when the battery is nearly full.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1225-nocap"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows that a smaller battery, size CR1225, cannot power the tag reliably,
+ at least not without a reservoir capacitor.
+ The graphs show that the internal resistance (voltage sag) is higher, and
+ that voltage sags near or below 1.8V even when the battery is still nearly
+ full.
+ 
+\end_layout
+
+\begin_layout Standard
+To overcome the high internal resistance of miniature batteries like CR1225
+ (and smaller ones, including lithium CR1025 and silver oxide cells), we
+ and others have been using a reservoir capacitor large enough to supply
+ enough current for one pulse on its own.
+ To simulate this, we connected batteries in parallel with either a miniature
+ 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F tantalum capacitor, AVX F950J337KBAAQ2
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "TantalumF95"
+literal "false"
+
+\end_inset
+
+ or a A miniature 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F (nominal) ceramic capacitor, Taiyo Yuden JMK325ABJ337MM-P
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ceramic330uF"
+literal "false"
+
+\end_inset
+
+, both rated for 6.3V.
+ The tantalum capacitor is 3.5 by 2.8 by 1.8mm and has maximum equivalent series
+ resistance (ESR) of 0.6 Ohms (at 100kHz).
+ The ceramic capacitor has effective capacitance of only 220
+\begin_inset Formula $\mu$
+\end_inset
+
+F from DC to about 100kHz, a strong reduction in capacitance at high DC
+ bias (about 40% at 3V), and extremely low ESR, 1mOhm at 100kHz and about
+ 10mOhm at 1kHz.
+ The tantalum capacitor is used in most of the ATLAS and Vildehaye tags
+ produced so far (see, e.g.,
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vildehaye-wp"
+literal "false"
+
+\end_inset
+
+).
+ 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Properties: 3.5 by 2.8 by 1.8 mm; 6.3V leakage current of 20.8uA at 20C, temperature
+ dependent, at most 10 more at 85C, ESR of 0.6Ohm at 100kHz
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+3.2 by 2.5 by 2.5mm; 6.3V; ~220uF at DC and frequencies below 100kHz; Strong
+ reduction in capacitance due to DC bias (~-40% at 3V); extremely low ESR,
+ 1mOhm at 100kHz, about 10mOhm at 1kHz.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-tantalum.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-ceramic.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "cr1025-tantalum-ceramic-normal"
+
+\end_inset
+
+Behavior of Renata CR1025 batteries connected in parallel with a capacitor
+ under pulsed load.
+ The load simulator was programmed to draw about 20mA for 8ms every second.
+ In the graph on the left, the capacitor was a 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F tantalum capacitor; in the graph on the right, a 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F (nominal) ceramic capacitor with effective capacitance around 220
+\begin_inset Formula $\mu$
+\end_inset
+
+F.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "cr1025-tantalum-ceramic-normal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shown the normal behavior of CR1025 batteries connected in parallel with
+ the two types of capacitors (one at a time) under this load.
+ The ceramic capacitor causes the voltage to drop lower than the tantalum
+ unit, even initially, because its effective capacitance is lower.
+ The graphs also show two additional behaviors that we do not currently
+ understand, but are not critical.
+ The first is the gradual decrease in the capacitance of the ceramic capacitor,
+ causing voltage under load to sag lower and lower.
+ The other is variability in the lower voltage under load.
+ Zooming in on the graphs reveals that this is a periodic phenomenon, in
+ which the effective capacitance appears to vary cyclically.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+CHECK!!!
+\end_layout
+
+\end_inset
+
+ The voltage under load in these settings drops fairly linearly, as shown
+ in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-tantalum-abnormal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ (left), because the capacitor is discharged almost linearly (most of the
+ charge is provided to the load from the capacitor, not from the battery
+ that has a much higher resistance).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-conpol.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-conpol-zoom-70249.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-tantalum-abnormal"
+
+\end_inset
+
+Behavior of Renata CR1025 battery in parallel with a tantalum capacitor,
+ showing occasional voltage drops, at least one catastrophic (below 1.8V).
+ The graph on the right shows the behavior within one pulse, at a time in
+ which the battery behaved normally.
+ The capacitor and the load were the same as in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "cr1025-tantalum-ceramic-normal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1225-ceramic-conpol.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1225-ceramic-conpol-failure.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1225-ceramic-abnormal"
+
+\end_inset
+
+Behavior of Renata CR1225 battery in parallel with a ceramic capacitor,
+ showing occasional voltage drops, many catastrophic (below 1.8V).
+ The graph on the right zooms in, showing interesting patterns of failure
+ after which the battery recovers.
+ The capacitor and the load were the same as in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "cr1025-tantalum-ceramic-normal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+However, the capacitor can also stress the battery, causing a tag to fail.
+ Figures
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-tantalum-abnormal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1225-ceramic-abnormal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ show such behaviors.
+ In both cases, the battery experiences significant voltage drops, including
+ in the inter-pulse periods (that is, these failures last more than a second),
+ and sometimes dropping well below 1.8V.
+ The tantalum capacitor induced mostly single-pulse failures.
+ The ceramic capacitor sometimes induces repeated prolonged periods in which
+ the battery experienced difficulties, perhaps due to its much lower ESR.
+ 
+\end_layout
+
+\begin_layout Standard
+These failures appear to be caused by a phenomenon called 
+\emph on
+concentration polarization
+\emph default
+, in which internal resistance increases temporarily because reactants become
+ depleted near the battery's electrodes (see, e.g.,
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "MartinPhD1999,PowerStreamIR"
+literal "false"
+
+\end_inset
+
+).
+ This is resolved through diffusion of the reactants, hence resolution can
+ be slow.
+ This phenomenon can be caused by exposing the battery to a load impedance
+ load, even for short periods
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Personal communication with Prof.
+ Emanuel Peled, School of Chemistry, Tel-Aviv University.
+\end_layout
+
+\end_inset
+
+.
+ These low-ESR capacitors indeed present a very low-impedance load to the
+ batteries.
+ As the pulse progresses, the capacitor is discharged because the tag or
+ the simulator sinks more current than the battery can provide, so the voltage
+ across the capacitor drops.
+ This presents a very low impedance load to the battery.
+\end_layout
+
+\begin_layout Standard
+These failures do not always occur.
+ We repeated the tests with two identical fresh CR1225s, one with each capacitor
+ type; failures were observed only in the battery connected to the ceramic
+ capacitor.
+ We then ran the experiment with two CR1025s connected to two identical
+ tantalum capacitors and two CR1025s connected to two ceramic capacitors;
+ the capacitors from the CR1225 experiments were reused.
+ In the second experiment, only one battery failed, one connected to a tantalum
+ capacitor.
+ We conclude that the propensity for these failures depends on the individual
+ battery; it is not uniform even for batteries from the same batch.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1225-tag.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1225-tag-zoom-185731.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1225-tag"
+
+\end_inset
+
+Behavior of a tag powered by a Renata CR1225 battery in parallel with a
+ tantalum capacitor.
+ The graph on the left shows the overall experiment and the graph on the
+ right the behavior during and after one pulse.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1225-tag"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the behavior of a tag connected to a CR1225 battery in parallel with
+ a tantalum capacitor.
+ In general, the behavior is similar to that of the simulated load, except
+ that the current consumption is smaller and varies more.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Limiting-Peak-Battery"
+
+\end_inset
+
+Limiting Peak Battery Current
+\end_layout
+
+\begin_layout Standard
+To prevent or mitigate concentration polarization, we need to limit from
+ below the impedance that the battery sees, which is equivalent to limiting
+ the current that is sourced from it.
+ This section shows how to do it, evaluates the effectiveness of the solution,
+ and also evaluates the impact of leakage current in the reservoir capacitor.
+ Leakage in large-value capacitors is nontrivial and as we will show, has
+ a significant impact on tags.
+\end_layout
+
+\begin_layout Subsection
+Design Options
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename cap-simulation.PNG
+	width 70text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:reservoir-cap-simulation-circuit"
+
+\end_inset
+
+Using a resistor to limit the current sourced from a battery when the tag
+ has a large reservoir capacitor.
+ In this diagram the tag is modeled by a current source, the reservoir capacitor
+ by an ideal capacitor in parallel with a resistor that models leakage,
+ and the battery as an ideal voltage source in series with a resistor that
+ models internal resistance.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+There are two main ways to limit the current that is sourced from the battery.
+ One is to connect the battery to the tag and to the reservoir capacitor
+ through a current-limiting resistor, as shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-simulation-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ In this configuration, the tag is powered by the reservoir capacitor; the
+ battery recharges the capacitor after every pulse through the current-limiting
+ resistor.
+ The battery also provides current during a pulse, but it is negligible.
+ 
+\end_layout
+
+\begin_layout Standard
+This current limiting configuration raises two concerns.
+ The first is the time it takes to recharge the capacitor.
+ During a pulse, the capacitor provides most of the current to the tag,
+ so its voltage drops, because its charge is depleted (the voltage across
+ a capacitor satisfies 
+\begin_inset Formula $Q=CV$
+\end_inset
+
+ where 
+\begin_inset Formula $Q$
+\end_inset
+
+ is the charge and 
+\begin_inset Formula $C$
+\end_inset
+
+ the capacitance).
+ If the next pulse occurs before the capacitor is sufficiently recharged,
+ the voltage at the end of pulses goes lower and lower, possibly causing
+ the tag to shut down or fail.
+ A high-value limiting resistor slows down the recharging, require current-consu
+mption pulses to be less frequent.
+ 
+\end_layout
+
+\begin_layout Standard
+The other concern is power wasted in the resistor.
+ We shall see below that the amount of energy wasted on the capacitor is
+ significant but not catastrophic.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename current-regulator-graph.PNG
+	width 70text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The behavior of typical integrated current regulators from the 1N52XX/1N53XX
+ series.
+ For the 1N5283, for example, 
+\begin_inset Formula $V_{L}=1\text{V},$
+\end_inset
+
+
+\begin_inset Formula $V_{K}=6\text{V}$
+\end_inset
+
+, and the maximum 
+\begin_inset Formula $V_{S}$
+\end_inset
+
+is 100V.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The other way to limit current drawn from the battery is with an active
+ current-regulation device.
+ There are integrated current regulators (e.g., 1N5283) or they can be constructed
+ from a transistor (JFET, MOSFET, or bipolar), sometimes with a resistor.
+ An ideal current regulator might have an advantage over a current-limiting
+ resistor because as the capacitor recharges, the impedance of the regulator
+ drops, reducing the amount of energy wasted in it.
+ However, true regulation only starts when the voltage across the regulator
+ is around 1V; below that, the regulator does not conduct or behaves like
+ a resistor.
+ In our case, the regulator rarely sees voltage higher than 1V, so it is
+ not likely to have any advantage.
+ Therefore, we opt for the simpler, physically smaller, and cheaper solution
+ of a current-limiting resistor.
+\end_layout
+
+\begin_layout Subsection
+Simulations
+\end_layout
+
+\begin_layout Standard
+To assess the effectiveness of reservoir capacitors we conducted a series
+ of simulations using LTSpice, a circuit-simulation program.
+ We note that we have also observed the same behaviors on an oscilloscope
+ and using our characterization system.
+ However, extracting quantitative parameters is easier in a simulator.
+ The simulations allow us to correctly size the current-limiting resistor
+ and to estimate the energy wasted on both the current-limiting resistor
+ and on leakage in the capacitor.
+ 
+\end_layout
+
+\begin_layout Standard
+The general setup for the simulations is shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-simulation-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The value of the capacitor is 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F, the actual value we use.
+ The value was selected to allow 8ms, 30mA pulses starting from 3V and ending
+ at a safe margin away from the 1.8V limit of the RF microcontroller (the
+ margin also takes into account the 20% tolerance of the capacitor).
+ The leakage is modeled by a 250k resistor.
+ The actual leakage is specified as 20.8
+\begin_inset Formula $\mu$
+\end_inset
+
+F at 6.3V and at 20C, rising by a factor of at most 10 at 85C (leakage rises
+ with temperature).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/R2000T8.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/R2000T8-zoom.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:R2000T8"
+
+\end_inset
+
+A 100s simulation of the circuit shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-simulation-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The tag (current source) sank 20mA for 8ms every 8 seconds.
+ On the right we see the entire 100s, showing that between current-sinking
+ pulses, voltage on the capacitor reaches an asymptote close to 3V.
+ On the right we see the voltage during and after one pulse.
+ During the pulse, it drops almost linearly due to the 
+\begin_inset Formula $Q=CV$
+\end_inset
+
+ behavior of the capacitor and the almost linear decrease in charge 
+\begin_inset Formula $Q$
+\end_inset
+
+.
+ After the pulse, voltage starts to rise as the capacitor is discharged
+ through the current-limiting resistor.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:R2000T8"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the voltage on the tag when the battery is connected through a 2k
+ resistor.
+ During each 8ms current-consumption pulse the voltage on the capacitor
+ (and on the tag's electronics) drops as the capacitor is discharged.
+ The drop is almost linear because the current provided by the battery during
+ the pulse is insignificant.
+ Between pulses the capacitor is discharged, here all the way to an asymptote
+ at 2.976V.
+ That value is a little lower than 3V because of the voltage divider formed
+ by the three resistors.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/R2000-fractions.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/R2000-voltage.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:R2000"
+
+\end_inset
+
+The distribution of battery energy and the minimal voltage seen by the tag
+ in simulations of the system with different inter-pulse intervals.
+ The other parameters are the same as in Figures
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:R2000T8"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-simulation-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The minimal voltages at short inter-pulse intervals are a little difficult
+ to read from they graph; they are 2.3V at intervals of 1s, 2.0V at 0.5s, and
+ 1.3V at 0.25s.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:R2000"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows what fraction of the energy drawn from the battery is spent on the
+ tag and what fractions are wasted on the current-limiting resistor and
+ on leakage, as well as the minimal voltage seen by the tag.
+ The voltage levels are safe down to an inter-pulse interval of 1 or even
+ 0.5s.
+ The amount of energy wasted is minimized at inter-pulse intervals of 1s
+ to 2s, where is it around 20%.
+ At shorter intervals, a significant fraction of the energy is wasted in
+ the current-limiting capacitor.
+ At long intervals, the energy wasted on leakage becomes significant, reaching
+ almost 50% at 16s.
+ The energy spent on the limiter drops a little at long intervals, but not
+ significantly.
+ The non-monotonic shape of the graph of productive energy expenditure suggests
+ that the limiting resistor should be sized according to the inter-pulse
+ interval.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/T2-fractions.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/T2-voltage.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:T2"
+
+\end_inset
+
+The same quantities plotted in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:R2000"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, but as a function of the current-limiting resistor.
+ The inter-pulse interval was 2s in all cases.
+ At the low-resistance end, the fractions do not sum to 1, most likely due
+ to numerical errors in the circuit simulator.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:T2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ presents a series of simulations designed to help select a current-limiting
+ resistor for a tag that transmits a 8ms 20mA pulse every 2 seconds.
+ The graphs show that the best efficiency, around 80%, is achieved with
+ resistors in the 1k to 2k range.
+ Even a 4k resistor, which protects the battery even better, is plausible;
+ efficiency is 76% and the minimal voltage is 2.3V.
+ At 8k, the minimal voltage is 1.9V, too close to the 1.8V threshold and efficienc
+y drops further to 67%.
+\end_layout
+
+\begin_layout Subsection
+Experimental Results
+\end_layout
+
+\begin_layout Standard
+To explore the effectiveness of the current-limiting resistor in mitigating
+ concentration-polarization failure, we ran 4 more experiments with Renata
+ CR1025 batteries from the same batch, all connected to a reservoir capacitor
+ through a 1k resistor.
+ Two were connected to ceramic capacitors (330
+\begin_inset Formula $\mu$
+\end_inset
+
+F nominal, about 220
+\begin_inset Formula $\mu$
+\end_inset
+
+F effective) and two to 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F tantalum capacitors.
+ The results are shown in Figures
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-tantalum-resistor"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-ceramic-resistor"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The experiments with tantalum capacitors, still showed some transient voltage
+ drops, but much less than the experiment without a resistor (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-tantalum-abnormal"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ There was also a significant different in the lifespans of the two batteries,
+ perhaps as a result of the these transient failures.
+ The experiments with ceramic capacitors showed no significant voltage drops.
+ The only relevant difference between the two setups is the effective capacitanc
+e and we are not sure what caused the difference in behaviors.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-resistor.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-resistor2.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-tantalum-resistor"
+
+\end_inset
+
+The results of a pulsed current-consumption experiments (20mA for 8ms every
+ 1s) when CR1025 batteries were connected to a 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F tantalum reservoir capacitor through a 1k resistor.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-ceramic-resistor.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-ceramic-resistor2.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-ceramic-resistor"
+
+\end_inset
+
+The results of a pulsed current-consumption experiments (20mA for 8ms every
+ 1s) when CR1025 batteries were connected to a 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F ceramic reservoir capacitor through a 1k resistor.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To determine whether a larger resistor and larger inter-pulse periods would
+ prevent the transient failures with tantalum capacitors we repeated the
+ experiment but with two 3.3k resistors and with 4s inter-pulse intervals.
+ The results included significant transient voltage drops in some of the
+ experiments, suggesting that the current-limiting resistor, at least at
+ these resistances, reduces concentration polarization but does not eliminate
+ it completely.
+ We address this finding in Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:firmware-prevention"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ with an additional mitigation mechanism, but before that we show how to
+ size the reservoir capacitor and the current-limiting resistor.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:A-Design-Procedure"
+
+\end_inset
+
+A Design Procedure
+\end_layout
+
+\begin_layout Standard
+We propose the following procedure to select the reservoir capacitor and
+ the current limiting resistor.
+ The capacitor is typically placed on the tag's printed circuit board (PCB),
+ so it should be selected when the tag is designed.
+ If a larger capacitor is required in some applications (e.g., applications
+ requiring longer pulses), the extra capacitor can be soldered to the one
+ on the board.
+ The resistor can reside on the board (we normally include one in our tags,
+ but its value may not be optimal for all tag configurations), but a small
+ through-hole resistor can also be used in lieu of a wire connecting the
+ battery to the board.
+ Replacing a small resistor on the board is difficult, because of the size
+ (the bulk capacitor much larger).
+\end_layout
+
+\begin_layout Standard
+Sizing the capacitor starts with a conservative estimate of the total charge
+ sank into the tag during a pulse of activity.
+ This can be estimated by measuring the current that a prototype tag (e.g.,
+ an evaluation board running the tag firmware) consumes during a pulse,
+ as well as before and after the pulse, if these are significant.
+ The current can be measured using a current-sensing resistor and an oscilloscop
+e, or using the current-sensing circuitry that is built into some evaluation
+ boards of RF microcontrollers
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+CITE or list
+\end_layout
+
+\end_inset
+
+.
+ Obviously, the current can also be measured using our characterization
+ system, when used in logging mode.
+\end_layout
+
+\begin_layout Standard
+The charge can also be estimated from data-sheet information, and it is
+ prudent to use that approach even when direct measurements are made, to
+ ensure that the measured data conforms to the data-sheet specification.
+ These calculations are not always trivial, so we demonstrate them using
+ an example.
+ The CC1310 that is used on our tags
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vildehaye-wp"
+literal "false"
+
+\end_inset
+
+ is specified to consume 13.4mA when transmitting a 10mW radio signal, when
+ the device is powered by a 3.6V source, and when the device uses its DC-DC
+ switching regulator.
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Assuming that the regulator is equally efficient at all input voltages,
+ the tag will consume 
+\begin_inset Formula $(13.4\times3.6)/3.0=16.08$
+\end_inset
+
+ milliamps at a battery voltage of 3V.
+\end_layout
+
+\end_inset
+
+ Because of the switching regulator, the CC1310 consumes roughly constant
+ power during the pulse; the information in the data sheet specifies the
+ power as 
+\begin_inset Formula $13.4\times3.6=48.24$
+\end_inset
+
+mW.
+ Therefore, during an 8ms pulse the tag consumes 0.386mJ.
+ The energy in a capacitor is 
+\begin_inset Formula $E=(1/2)CV^{2}$
+\end_inset
+
+, so the voltage 
+\begin_inset Formula $V_{\text{end}}$
+\end_inset
+
+ at the end of the pulse satisfies
+\begin_inset Formula 
+\[
+\frac{1}{2}CV_{\text{start}}^{2}-0.368\times10^{-3}=\frac{1}{2}CV_{\text{end}}^{2}\;,
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $V_{\text{start}}$
+\end_inset
+
+ is the voltage on the capacitor at the beginning of the pulse (hopefully
+ the voltage of the battery when it is not under load).
+ If we assume that 
+\begin_inset Formula $V_{\text{start}}=3$
+\end_inset
+
+ and we constrain 
+\begin_inset Formula $V_{\text{end}}\geq2.4$
+\end_inset
+
+, for example, we obtain
+\begin_inset Formula 
+\begin{eqnarray*}
+V_{\text{end}}^{2} & = & V_{\text{start}}^{2}-\frac{2\times0.368\times10^{-3}}{C}\\
+ & = & 9-\frac{2\times0.368\times10^{-3}}{C}\\
+ & \geq & 2.4^{2}\\
+\frac{2\times0.368\times10^{-3}}{C} & \leq & 3.24\\
+C & \geq & \frac{2\times0.368\times10^{-3}}{3.24}=227.16\mu\text{F}\;.
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If the same CC1310 chip is configured to use its linear regulator, not the
+ switching regulator, the calculation is carried out a little differently.
+ Both regulators output about 1.7V, so when producing a 10mW RF output, the
+ device consumes about 
+\begin_inset Formula $48.24\text{mW}/1.7\text{V}=28.38\text{mA}$
+\end_inset
+
+.
+ When a linear regulator is used, the device consumes this much current
+ at all voltages (the device behaves like a constant-current sink).
+ Therefore, during an 8ms transmission the amount of charge consumed from
+ the reservoir capacitor is 
+\begin_inset Formula $28.38\text{mA}\times8\text{ms}=0.227\text{mC}$
+\end_inset
+
+.
+ Using the 
+\begin_inset Formula $Q=CV$
+\end_inset
+
+ capacitor equation we find that
+\begin_inset Formula 
+\begin{eqnarray*}
+Q_{\text{end}} & = & Q_{\text{start}}-0.227\text{mC}\\
+CV_{\text{end}} & = & CV_{\text{start}}-0.227\text{mC}\\
+\; & = & C\times3-0.227\text{mC}\;.
+\end{eqnarray*}
+
+\end_inset
+
+We can again solve for the limit on 
+\begin_inset Formula $C$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{eqnarray*}
+V_{\text{end}} & = & 3-\frac{0.227\text{mC}}{C}\\
+ & \geq & 2.4
+\end{eqnarray*}
+
+\end_inset
+
+or
+\begin_inset Formula 
+\begin{eqnarray*}
+C & \geq & \frac{0.227}{3-2.4}=378\mu\text{F}\;.
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Next, the value of the resistor should be selected using the simulation
+ shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-simulation-circuit"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The appendix shows the Spice directives that extract the relevant parameters
+ from the simulation.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Preventing-Reservoir-Capacitor-Leakage"
+
+\end_inset
+
+Preventing Reservoir-Capacitor Leakage
+\end_layout
+
+\begin_layout Standard
+Unless the tag transmits or performs other high-power activity often, much
+ of the battery energy is wasted due to leakage in the reservoir capacitor,
+ as shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:R2000"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ We have not found low-leakage alternatives.
+ Therefore, in tags that transmit infrequently (less than about every 8s)
+ and in tags that are in storage (inactive), it is better to disconnect
+ the reservoir capacitor during times of low current consumption, to prevent
+ leakage.
+ 
+\end_layout
+
+\begin_layout Standard
+Disconnecting the capacitor is fairly easy, using a power MOSFET.
+ This increases the size of the tag due to the additional component, but
+ not by much.
+ However, reconnecting the capacitor requires a careful design.
+ If we reconnect the capacitor with a digital signal that turns the MOSFET
+ on, the charging current of the capacitor will crash the voltage that the
+ tag sees and will cause the tag to reset.
+ This will happen whether a current-limiting resistor is used or not.
+ 
+\end_layout
+
+\begin_layout Subsection
+A Slow-Reconnect Mechanism
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename circuit-slowstart.PNG
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/slowstart.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:reservoir-cap-slowstart"
+
+\end_inset
+
+Using an artificial Miller effect to slowly charge the reservoir capacitor.
+ Left: the slow-start circuit, here part of an LTSpice simulation.
+ Right: the results of the simulation.
+ Control voltage starts at 0, transitions to 3V at 1s, then back to 0 at
+ 21s.
+ Oscilloscope traces show the same behavior.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To avoid this, we designed a simple analog circuit that charges the capacitor
+ slowly, so as not to crash the battery's voltage.
+ The circuit is shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-slowstart"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ When the tag is in sleep mode, the control voltage is 0, transistor Q1
+ is turned off, and the reservoir capacitor C1 is discharged, so the drain
+ voltage is identical to the battery's voltage, 3V.
+ When the microcontroller decides to enable the reservoir capacitor, it
+ turns the control voltage on (to 3V) and waits 5 seconds.
+ To disable the reservoir capacitor and the leakage that it causes, the
+ microcontroller turns the control voltage off.
+ 
+\end_layout
+
+\begin_layout Standard
+The results of a simulation of a turn-on and a turn-off events is shown
+ in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reservoir-cap-slowstart"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ (right).
+ The simulation starts with the capacitor disconnected.
+ The control voltage and the gate voltage are 0 and the voltage at the drain
+ is 3V, the same as the battery voltage.
+ This simulates the state of the circuit after all the charge in C1 has
+ leaked.
+ At this state, C2 is charged, and there is no current flow in the circuit.
+ When the control voltage rises to 3V one second after the simulation starts,
+ the voltage at the gate gradually rises to about 0.9V, then plateaus, then
+ rises to 3V.
+ During the plateau period, voltage at the drain drops close to linearly
+ as the reservoir capacitor is charged with close-to-constant current.
+ While the transistor is on, about 12
+\begin_inset Formula $\mu$
+\end_inset
+
+A leaks through the capacitor.
+ When the control voltage is turned off, C2 is charged through R1, which
+ causes the gate voltage to drop until the transistor stops conducting.
+ At that point, drain current starts rising due to leakage in C1, but there
+ is again no current flowing out of the battery.
+\end_layout
+
+\begin_layout Standard
+The behavior of the gate voltage at turn-on is a slowed-down version of
+ the normal behavior of a MOSFET that is turned on by a fast rising edge
+ at the gate (see, e.g.,
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Vishay:2016:MOSFETSwitching"
+literal "false"
+
+\end_inset
+
+.
+ The normal (and much faster behavior) is caused by the gate resistance
+ 
+\begin_inset Formula $R_{g}$
+\end_inset
+
+ and the gate-drain capacitance 
+\begin_inset Formula $C_{gd}$
+\end_inset
+
+ that are parasitic elements in any MOSFET.
+ In our circuit these parasitic resistance and capacitance are augmented
+ by the large R1 and C2, slowing down the transition.
+ 
+\end_layout
+
+\begin_layout Standard
+The utility of this circuit (and in particular, of the large R1 and c2)
+ is that it charges the reservoir capacitor at an almost constant current
+ whose magnitude depends on the length of the plateau (called the Miller
+ plateau in discussions of MOSFET behavior), which in turn is controlled
+ by the 
+\begin_inset Formula $RC$
+\end_inset
+
+ product of R1 and C2.
+ That is, we can keep this voltage low, so as not to drop the battery voltage
+ below 1.8V, by selecting large R1 and C2.
+ 
+\end_layout
+
+\begin_layout Subsection
+Software Control of the Mechanism
+\end_layout
+
+\begin_layout Standard
+In our tags, we use an ultra-low-power core to control this mechanism.
+ The tags use a CC1310 RF microcontroller, which has three processing cores:
+ a general purpose ARM Cortex-M3 CPU, an ARM Cortex-M0 CPU dedicated to
+ operating the radio, and an ultra-low power core called a 
+\emph on
+sensor controller
+\emph default
+.
+ In our firmware, the sensor-controller implements a state machine with
+ the following states.
+\end_layout
+
+\begin_layout Itemize
+The initial state, state 5, in which the reservoir capacitor is charging
+ and the control voltage is on.
+ When entering this state, the code sets up a timer event in When the timer
+ expires, the state machine sets up an interrupt on a pin connected to a
+ Hall sensor.
+ When the interrupt arrives and transitions to state 1.
+\end_layout
+
+\begin_layout Itemize
+A transition to state 1 signifies that an external event signals that the
+ user wants to put the entire system to sleep.
+ This is achieved by placing a magnet near the tag, which activates a low-power
+ Hall sensor.
+ The state machine sends an interrupt notification to the Cortex-M3 core,
+ indicating that it should stop all activity.
+ The state machine waits for an interrupt from the Cortex-M3; when it arrives,
+ it transitions to state 2.
+\end_layout
+
+\begin_layout Itemize
+The interrupt that caused the transition to state 2 signals that the Cortex-M3
+ has stopped its activities and is in sleep mode, so the reservoir capacitor
+ can be disconnected.
+ The control voltage is set low, to disconnect the MOSFET.
+ The state machine waits for an interrupt indicating that the magnet has
+ been removed, which signifies that the user wants the system back on.
+\end_layout
+
+\begin_layout Itemize
+The interrupt causes a transition to state 3, in which the control voltage
+ is set back high.
+ The state machine waits 10s for the capacitor to charge, then transitions
+ to state 4.
+\end_layout
+
+\begin_layout Itemize
+In state 4 the state machine sends an interrupt to the Cortex-M3, indicating
+ that the capacitor is connected and charged, so the Cortex-M3 can resume
+ normal tag operations.
+ An interrupt sent back will transition the state machine to state 5.
+\end_layout
+
+\begin_layout Itemize
+When the Cortex-M3 starts, it sends an interrupt back to the sensor controller,
+ which transitions to state 5.
+ It configures an interrupt on the output of the sensor Hall, to wait for
+ the next indication from the user that operations should be halted.
+ When the interrupt occurs, the state machine goes back to state 1.
+\end_layout
+
+\begin_layout Standard
+When the sensor controller starts, it sets the control voltage high to connect
+ the MOSFET, waits 10s, and then starts the state machine at state
+\begin_inset space ~
+\end_inset
+
+5.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:firmware-prevention"
+
+\end_inset
+
+Firmware-Based Prevention of Concentration Polarization
+\end_layout
+
+\begin_layout Standard
+Given our findings that current limiting does not completely eliminates
+ voltage drops due to concentration polarization, we developed another mechanism
+ to prevent tags from resetting or failing when that this happens.
+ This mechanism has two parts, an offline analysis part and an active firmware
+ control part.
+ The offline task is to estimate the maximum voltage drop during an activity
+ period.
+ This estimate can be derived from the equations shown in Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:A-Design-Procedure"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, allowing for variations in current consumption and in the capacitance
+ of the reservoir capacitor.
+\end_layout
+
+\begin_layout Standard
+The online mechanism that the firmware implements monitors the voltage at
+ the beginning of an activity period.
+ If it sufficiently high to ensure that the voltage at the end of the activity
+ period will remain safely above the reset threshold (1.8V), processing continues
+ normally.
+ If it is not, processing is halted and the system is returned to deep sleep
+ mode.
+ The next wakeup can be scheduled for the next activity slot, but it can
+ also be deferred further, say using exponential backoff, to prevent tag
+ failure due to repeated wakeups that only monitor the voltage and return
+ to sleep.
+ As an example, if we estimate the maximum voltage drop during an activity
+ period to be 0.4V and the reset threshold is 1.8V, we might set the inactivity
+ threshold at 2.3V, giving a 0.1V margin.
+ Monitoring the battery voltage at the beginning of an activity period can
+ be done using an ADC or using a comparator.
+\end_layout
+
+\begin_layout Standard
+To assess the effectiveness of this mechanism, we ran 8 additional experiments
+ that tested this mechanism using an enhanced version of the load-simulation
+ system, in which the firmware implemented this mechanism and was able to
+ report when it caused activity periods to be skipped.
+ All the experiments used CR1025 batteries and 330
+\begin_inset Formula $\mu$
+\end_inset
+
+F tantalum capacitors.
+ Two experiments used 3.3k current-limiting resistors and inter-activity
+ intervals of 4s; four experiments used 1k resistors and 1s intervals; two
+ used no resistor and 1s intervals.
+ 
+\end_layout
+
+\begin_layout Standard
+Six of the experiments showed no transient voltage drops below 2.3V at the
+ beginning of an activity period.
+ Two showed such voltage drops, multiple ones in both experiments.
+ One of these used a 1k resistor and the other no resistor.
+ The results are shown in Figures
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-skips-no-res"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-skips-1k-res"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The results indicate that the mechanism is effective; supply voltage did
+ not drop below 1.8V even though the batteries did experience voltage drops.
+ The activity periods were not, of course, completely periodic; some were
+ skipped to avoid voltages below 1.8V.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-no-resistor-skip-bad-pulse-nan-final-2.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-no-resistor-skip-bad-pulse-final-2.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-skips-no-res"
+
+\end_inset
+
+The results of an experiment with a CR1025 battery, tantalum reservoir capacitor
+, no current-limiting resistor, and with activity-period skipping when the
+ voltage at the beginning of a period is less than 2.3V.
+ The graph on the left shows measured voltages and currents.
+ The graph on the right shows the same data, but with skipped periods represente
+d by 0V and 0A, to show when activity periods were skipped..
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-1kresistor-skip-bad-pulse-final-4.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/bat1025-tantalum-1kresistor-skip-bad-pulse-final-4-zoom.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-skips-1k-res"
+
+\end_inset
+
+The results of an experiment similar to that shown in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-skips-no-res"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, but with a 1k current-limiting resistor.
+ The graph on the right zooms in on one contiguous set of skipped activity
+ periods..
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cr1025-skip-timing-durations"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the length of these inactivity periods that the firmware imposes
+ to let the battery recover.
+ Towards the end of the life of the battery these periods become more frequeny
+ and longer; an actual tag would be observed to 
+\begin_inset Quotes eld
+\end_inset
+
+stutter
+\begin_inset Quotes erd
+\end_inset
+
+ during this period.
+ In one experiment the periods of inactivity were short as long as the battery
+ was relatively full, up to about 10s, with most periods being shorter.
+ In the other experiment, there were more inactivity periods that lasted
+ 10s or more, and one lasted around 100s.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/skipsNoResistor.eps
+	width 47text%
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/skips1kResistor.eps
+	width 47text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cr1025-skip-timing-durations"
+
+\end_inset
+
+Times at which the load simulator skipped pulses and the duration of the
+ inactivity periods that were required for the battery voltage to rise back
+ above the threshold.
+ The graph on the left shows the result of an experiment with no current-limitin
+g resistor and the graph on the right the results with a 1k resistor.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Conclusions"
+
+\end_inset
+
+Conclusions
+\end_layout
+
+\begin_layout Standard
+We have demonstrated that small lithium coin cells that are exposed to periodic
+ low- and medium-impedance loads suffer from transients of high internal
+ resistance.
+ This appears to be caused by concentration polarization, an phenomenon
+ of unevenness in the distribution of reactants near the battery's electrode.
+ This happens when the battery powers the electronics directly (a load of
+ about 150
+\begin_inset Formula $\Omega$
+\end_inset
+
+ for 8ms ever second in our experiments) and when the battery's role is
+ to recharge a reservoir capacitor, both when the battery is connected in
+ parallel with the capacitor and when it is connected to it through a 
+\begin_inset Formula $1\text{k}\Omega$
+\end_inset
+
+ or 
+\begin_inset Formula $3.3\text{k}\Omega$
+\end_inset
+
+ resistor.
+ The inclusion of a current-limiting resistor appears to mitigate the effect
+ but not to eliminate it completely.
+ 
+\end_layout
+
+\begin_layout Standard
+This effect can easily cause the microcontroller to reset, or, depending
+ on how quickly the voltage recover, get stuck in an inconsistent state
+ that drains the battery without delivering the required function.
+ The only reliable way that we found to eliminate this risk is to include
+ a reservoir capacitor that stores enough energy to power the circuit during
+ a burst of activity, and to skips such bursts if the starting voltage is
+ low enough to risk a reset.
+\end_layout
+
+\begin_layout Standard
+We have also found that this effect is not particularly rare, but does not
+ happen with every single battery.
+ Batteries, even from the same batch, vary with respect to this effect.
+ This underlies the need to perform rigorous testing on systems powered
+ by such batteries.
+ 
+\end_layout
+
+\begin_layout Standard
+Our findings have been made possible by a low-cost, easy-to-use, and easy-to-rep
+licate load simulator and monitor.
+ This load simulator allowed us to perform up to 8 experiments concurrently,
+ all using a single computer and at a moderate cost.
+ Our design is freely available and should enable others to perform similar
+ detailed analyses of electronic systems powered by miniature batteries
+ and/or by energy harvesting devices.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "battery"
+options "plain"
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Section*
+\start_of_appendix
+Installation and Operating Instructions for the Characterization System
+\end_layout
+
+\begin_layout Subsection*
+Setting Up the Development Environment for the Firmware
+\end_layout
+
+\begin_layout Plain Layout
+The firmware of the characterization system uses the Arduino environment
+ together with a board-support-package (BSP) for the board that we use.
+ Detailed instructions for installing the Arduino environment and the BSP
+ for are available at 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/setup
+\end_layout
+
+\end_inset
+
+.
+ Here we summarize the instructions to give the reader a sense of the steps
+ involved.
+ The instructions are for Windows, but the software should also be usable
+ on Linux.
+ The instructions
+\end_layout
+
+\begin_layout Enumerate
+Install the Arduino integrated development environment (IDE).
+\end_layout
+
+\begin_layout Enumerate
+Add to the IDE the URL that specifies the location of BSPs distributed by
+ Adafruit, the manufacturer of the board that we use.
+\end_layout
+
+\begin_layout Enumerate
+Install the support package for 
+\emph on
+Adafruit SAMD 
+\emph default
+boards, which includes the Adafruit Feather M4 Express, the board that we
+ use.
+\end_layout
+
+\begin_layout Enumerate
+On some operating systems (Windows 7 and 8) you will also need to install
+ device drivers for the USB connection to the board.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+While developing this project, we encountered a bug in the M4 Express board
+ library.
+ This bug must be fixed; fortunately, a patch is available, at 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/adafruit/ArduinoCore-samd/commit/6b53436c078cef977509fb2054675
+cb630b7d28e#diff-8b717367c9aabdaaacc859b5b8471752
+\end_layout
+
+\end_inset
+
+.
+ This patch modifies one of the source files in the BSP.
+ This file is normally located at 
+\family typewriter
+c:
+\backslash
+Users
+\backslash
+<UserName>
+\backslash
+Documents
+\backslash
+ArduinoData
+\backslash
+packages
+\backslash
+adafruit
+\backslash
+hardware
+\backslash
+samd
+\backslash
+1.2.1
+\backslash
+variants
+\backslash
+feather_m4
+\backslash
+variant.cpp
+\family default
+.
+ Patch the file locally before you build the firmware.
+\end_layout
+
+\begin_layout Subsection*
+Setting Up the Development Environment for the Host-Side Software
+\end_layout
+
+\begin_layout Plain Layout
+The host-side software is written in C# and we build it using Microsoft
+ Visual Studio.
+ Once the development environment is installed, check out the source code
+ from 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/shaimendel/BioTagMonitor
+\end_layout
+
+\end_inset
+
+ and follow the instructions in the README file.
+\end_layout
+
+\begin_layout Plain Layout
+Now you have all you need in order to modify and change the code.
+ The code contains 2 major software parts, the Arduino firmware (which is
+ located at 
+\family typewriter
+BioTagMonitor
+\backslash
+MeasureGraph
+\backslash
+AutoMeasureGraphMin
+\family default
+) and the C# host software (the solution file is located at 
+\family typewriter
+BioTagMonitor
+\backslash
+Measure.sln
+\family default
+).
+\end_layout
+
+\begin_layout Subsection*
+Setting the experiment environment
+\end_layout
+
+\begin_layout Plain Layout
+In order to prepare an environment to conduct experiments, either with real
+ wildlife tags or simulating load on batteries, you should prepare and do
+ the following:
+\end_layout
+
+\begin_layout Itemize
+Prepare the hardware needed:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The Arduino board connected to our dedicated board
+\end_layout
+
+\begin_layout Itemize
+Iron two 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Fill the name of the connectors
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+The relevant miniature battery, and a wildlife tag if needed
+\end_layout
+
+\begin_layout Itemize
+The hardware should look like:
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Upload the firmware to the Arduino board:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Connect the Arduino board to the PC (Windows machine in our case)
+\end_layout
+
+\begin_layout Itemize
+Open the Arduino IDE
+\end_layout
+
+\begin_layout Itemize
+In the 
+\begin_inset Quotes eld
+\end_inset
+
+Tools
+\begin_inset Quotes erd
+\end_inset
+
+ bar:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Choose the 
+\begin_inset Quotes eld
+\end_inset
+
+Adafruit Feather M4 (SAMD 51)
+\begin_inset Quotes erd
+\end_inset
+
+ board type
+\end_layout
+
+\begin_layout Itemize
+Choose the correct serial port (the one that you just connected via USB)
+\end_layout
+
+\begin_layout Itemize
+In the end it should look like:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename arduino_ide_configuration.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Upload the firmware to the board
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Make sure that the following files from the source code are located on the
+ host that manages the experiment:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The host C# binary the manages the experiment:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If the host is a windows machine: Compile the .sln file, the output file
+ MeasureGraph.exe will be located at BioTagMonitor
+\backslash
+MeasureGraph
+\backslash
+bin
+\backslash
+Debug
+\backslash
+MeasureGraph.exe.
+ 
+\end_layout
+
+\begin_layout Itemize
+If the host is Linux (specifically tested on Ubuntu 16.04): The pre-compiled
+ binary file is located in the git repository at BioTagMonitor
+\backslash
+PreCompiled
+\backslash
+Measure.exe (compiled with Mono on Ubuntu 16.04 64bit).
+ If you want to compile it yourself:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Install mono: sudo apt install mono-complete
+\end_layout
+
+\begin_layout Itemize
+Go to the Measure project: cd BioTagMonitor
+\backslash
+Measure
+\end_layout
+
+\begin_layout Itemize
+Build the project: xbuild Measure.csproj /p:TargetFrameworkVersion="v4.5"
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+The visualization script, which visualizes the output files to a graph.
+ Located in the git repository at BioTagMonitor
+\backslash
+Visualization
+\backslash
+visualizeData.py.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection*
+Running an experiment
+\end_layout
+
+\begin_layout Subsubsection*
+Running an experiment with wildlife tag and a battery
+\end_layout
+
+\begin_layout Itemize
+Connect the wildlife tag and the battery to the board
+\end_layout
+
+\begin_layout Itemize
+Run the host C# binary as root/administrator
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ubunto 16.04:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+cd <folder of the location of Measure.exe>
+\end_layout
+
+\begin_layout Itemize
+sudo mono Measure.txt
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Windows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+cd <folder of the location of MeasureGraph.exe>
+\end_layout
+
+\begin_layout Itemize
+Run MeasureGraph.exe as administrator (right click -> run as administrator)
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Choose the correct comm port
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ubuntu 16.04:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The device name will be in the format of /dev/ttyACM<number>
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Windows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The device name will be in the format of COM<number>
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Click 
+\begin_inset Quotes eld
+\end_inset
+
+GO
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Ubuntu screenshot:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename measure_linux_real_tag.PNG
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Windows screenshot:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename measure_windows_real_tag.PNG
+	lyxscale 75
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Running an experiment with simulated current load
+\end_layout
+
+\begin_layout Itemize
+Connect the battery to the board
+\end_layout
+
+\begin_layout Itemize
+Run the host C# binary as root/administrator
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ubunto 16.04:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+cd <folder of the location of Measure.exe>
+\end_layout
+
+\begin_layout Itemize
+sudo mono Measure.txt
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Windows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+cd <folder of the location of MeasureGraph.exe>
+\end_layout
+
+\begin_layout Itemize
+Run MeasureGraph.exe as administrator (right click -> run as administrator)
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Choose the correct comm port
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ubuntu 16.04:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The device name will be in the format of /dev/ttyACM<number>
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Windows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The device name will be in the format of COM<number>
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Check the 
+\begin_inset Quotes eld
+\end_inset
+
+Simulation
+\begin_inset Quotes erd
+\end_inset
+
+ check box
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Set the pulse length, in ms.
+ Default: 8
+\end_layout
+
+\begin_layout Itemize
+set the DAC output, in a range of 0-256.
+ For example: put 15 for ~20 milli amper.
+ Default: 23
+\end_layout
+
+\begin_layout Itemize
+Set the interval between the pulses, in ms.
+ Default: 1000.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Click 
+\begin_inset Quotes eld
+\end_inset
+
+GO
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+You can change the parameters in real time and click on the 
+\begin_inset Quotes eld
+\end_inset
+
+Update
+\begin_inset Quotes erd
+\end_inset
+
+ button, the change will take place immediately
+\end_layout
+
+\begin_layout Subsubsection*
+Log files and visualization
+\end_layout
+
+\begin_layout Plain Layout
+In both scenarios above the log file will be located at: <C# binary location>
+\backslash
+Voltage
+\backslash
+<date of measurement>.txt.
+\end_layout
+
+\begin_layout Plain Layout
+In order to show the results you can use the visualization python script
+ mention above.
+ The main flags are: visualizeData.py -
+\begin_inset space ~
+\end_inset
+
+-os=<linux/windows> -
+\begin_inset space ~
+\end_inset
+
+-full=<true/false> <path to log file>.
+ When the 
+\begin_inset Quotes eld
+\end_inset
+
+full
+\begin_inset Quotes erd
+\end_inset
+
+ flag is true the graph will show all the measurements from the beginning
+ of the experiment, when it is false it will show only the measurement from
+ the last hour.
+ In the full=false mode you can click on the any pulse measurement and you
+ will then see the graph of the pulse itself, as can be seen in figures
+ in this document.
+\end_layout
+
+\begin_layout Plain Layout
+There is also a matlab implementation of this script, which shows all the
+ measurements from the beginning and also supports the pulse graph.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+In both scenarios above, only in the Windows implementation, you can check
+ the 
+\begin_inset Quotes eld
+\end_inset
+
+Draw
+\begin_inset Quotes erd
+\end_inset
+
+ check box and the system will start showing you results on the screen in
+ real time.
+ Unmark the checkbox to stop the real-time graph updates.
+ Please use the 
+\begin_inset Quotes eld
+\end_inset
+
+Draw
+\begin_inset Quotes erd
+\end_inset
+
+ option with caution, because it takes a lot of RAM, use it very moderately
+ for debugging.
+\end_layout
+
+\begin_layout Section*
+Deriving Efficiency and Minimum-Voltage Values from LTSpice Simulations
+\end_layout
+
+\begin_layout Plain Layout
+We use the following Spice directives to compute the energy wasted on leakage
+ and on the current-limiting capacitor, as well as to clearly display the
+ minimal voltage reached at the end of pulses.
+ We set the initial capacitor voltage to the battery voltage.
+ The total energy expenditure is equal to the energy extracted from the
+ battery plus the energy differential of the capacitor between the beginning
+ and the end of the simulation.
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.ic V(Vbat)=3 V(Vtag)=3
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Pbat INTEG -I(Batt)*V(Vbat)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Ptag INTEG I(Tag)*V(Vtag)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Plimiter INTEG I(Limiter)*(V(Vbat)-V(Vtag))
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Pleakage INTEG I(leakage)*V(Vtag)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Ecap param 0.5*330e-6*3*3-0.5*330e-6*V(Vtag)*V(Vtag) at=1000
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure cFracCap param Ecap/Pbat
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure cFracTag param Ptag/(Pbat+Ecap)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure cFracLimiter param Plimiter/(Pbat+Ecap)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure cFracLeakage param Pleakage/(Pbat+Ecap)
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure cFracTotal param cFracTag+cFracLimiter+cFracLeakage
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+.measure Vmin MIN V(Vtag)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
