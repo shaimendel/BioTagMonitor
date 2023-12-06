@@ -42,3 +42,6 @@ This software records measurements as soon as it identifies an activity in the t
 
 #### PCB
 Circuit and printed-circut board design for the add-on analog board. These are Eagle 6.6 files. The "relabeled" schmatics is cleaned up a bit for clarity. It also does not include 0-Ohm resistors and jumper traces that are included in the original design to allow patching the board. 
+
+#### Simulation
+LTSpice simulation model for the analysis of the reservoir cap and its limiter resistor. 
