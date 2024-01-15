@@ -1,4 +1,4 @@
-# BioTagMonitor
+# Software, Firmware, and Hardware for a Battery Characterization System
 Biological tags are very popular in the field of animal behaviour research.
 These tags developers have to deal with numerous problems, both in hardware and software.
 One of the problems is to choose the correct battery to put within the tag itself: the battery should be lightweight, to last long, to cope with different weather conditions, etc.
